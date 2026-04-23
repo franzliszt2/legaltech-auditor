@@ -1,0 +1,217 @@
+{
+  "title": "OWASP Top 10 for LLM Applications 2025",
+  "version": "2025",
+  "source": "https://genai.owasp.org/llm-top-10/",
+  "pdf": "https://owasp.org/www-project-top-10-for-large-language-model-applications/assets/PDF/OWASP-Top-10-for-LLMs-v2025.pdf",
+  "items": [
+    {
+      "id": "LLM01:2025",
+      "name": "Prompt Injection",
+      "description": "A Prompt Injection vulnerability occurs when user prompts alter the LLM's behavior or output in unintended ways. Inputs can manipulate the model through specially crafted prompts, causing it to ignore instructions, bypass safeguards, execute unauthorized actions, or leak sensitive information.",
+      "types": {
+        "direct": "User directly injects instructions into a prompt to override system behavior.",
+        "indirect": "Malicious content embedded in external data sources (documents, web pages, emails) that the LLM retrieves and processes, hijacking its actions without the user's knowledge."
+      },
+      "attack_scenarios": [
+        "Attacker embeds hidden instructions in a document submitted to an AI contract reviewer, causing the model to output attacker-controlled content.",
+        "Malicious email contains instruction to forward client data to an external address, processed by an LLM email assistant.",
+        "User input overrides system prompt rules in a legal intake chatbot, extracting confidential matter information."
+      ],
+      "prevention": [
+        "Enforce privilege control on LLM requests and limit trust in LLM-generated outputs",
+        "Implement human oversight for high-impact actions",
+        "Separate untrusted content from instructions using delimiters",
+        "Validate and sanitize all external data before passing to the LLM",
+        "Deploy adversarial testing and red teaming",
+        "Use input/output validation layers independent of the model"
+      ],
+      "legal_tech_relevance": "Critical — contract review bots, intake forms, and due diligence tools that process adversarial documents are directly exposed. A malicious contract could manipulate an AI reviewer's analysis.",
+      "severity": "critical"
+    },
+    {
+      "id": "LLM02:2025",
+      "name": "Sensitive Information Disclosure",
+      "description": "Sensitive information can affect both the LLM and its application context. This includes PII, financial details, health records, confidential business data, security credentials, and legal documents. LLMs risk exposing this data through outputs or training processes, resulting in unauthorized data access, privacy violations, and IP breaches.",
+      "attack_scenarios": [
+        "Users receive responses containing other clients' personal data due to inadequate sanitization of training or context data.",
+        "Targeted prompt injection bypasses filters to extract sensitive system prompt or document content.",
+        "Negligent data inclusion in training causes confidential matter information to surface in unrelated queries."
+      ],
+      "prevention": [
+        "Implement data sanitization preventing user data from entering training models",
+        "Apply strict input validation to filter harmful or sensitive inputs",
+        "Enforce principle of least privilege on data access",
+        "Implement homomorphic encryption or tokenization for sensitive data processing",
+        "Maintain clear data retention, usage, and deletion policies",
+        "Conceal system preamble from user access"
+      ],
+      "legal_tech_relevance": "Critical — attorney-client privileged information, matter-specific data, and PII processed by legal AI tools. Disclosure violates ABA Model Rule 1.6 and potentially triggers GDPR/CCPA obligations.",
+      "severity": "critical"
+    },
+    {
+      "id": "LLM03:2025",
+      "name": "Supply Chain",
+      "description": "LLM supply chains are susceptible to vulnerabilities affecting training data, models, and deployment integrity. Unlike traditional software, ML systems face threats from third-party pre-trained models and datasets susceptible to tampering or poisoning. The proliferation of open-access LLMs and fine-tuning techniques expand the attack surface.",
+      "attack_scenarios": [
+        "Compromised PyTorch or LangChain packages deliver malware during development.",
+        "PoisonGPT-style attack directly modifies model parameters to spread misinformation in legal research tools.",
+        "Malicious LoRA adapter injected into shared model repository compromises a fine-tuned legal AI.",
+        "Fake model published under original name after legitimate model removed from HuggingFace."
+      ],
+      "prevention": [
+        "Vet suppliers' security postures, terms of service, and privacy policies",
+        "Apply OWASP A06 controls: vulnerability scanning, patching, dependency management",
+        "Conduct red teaming on third-party models",
+        "Maintain signed Software Bills of Materials (SBOM) using OWASP CycloneDX",
+        "Source models only from verifiable origins with cryptographic integrity checks",
+        "Implement anomaly detection in MLOps pipelines"
+      ],
+      "legal_tech_relevance": "High — legal AI tools built on open-source LLMs or third-party APIs may inherit compromised models. Firms using poisoned models for legal research or contract review face malpractice exposure.",
+      "severity": "high"
+    },
+    {
+      "id": "LLM04:2025",
+      "name": "Data and Model Poisoning",
+      "description": "Data poisoning manipulates training data across pre-training, fine-tuning, or embedding phases to introduce vulnerabilities and backdoors. As an integrity attack, it compromises model accuracy and can enable downstream system exploitation. Particularly severe with unverified external data sources.",
+      "attack_scenarios": [
+        "Attackers inject falsified legal documents into training data causing model to reflect those inaccuracies in legal research outputs.",
+        "Backdoor triggers inserted enabling covert command execution or authentication bypass.",
+        "Unfiltered toxic data produces harmful or biased legal advice outputs."
+      ],
+      "prevention": [
+        "Track data lineage using OWASP CycloneDX",
+        "Validate training data against trusted sources",
+        "Implement strict sandboxing for unverified data sources",
+        "Use data version control to monitor dataset modifications",
+        "Conduct red team assessments and adversarial testing",
+        "Monitor training metrics for poisoning indicators"
+      ],
+      "legal_tech_relevance": "High — legal AI tools fine-tuned on case law or contract databases are vulnerable if data sources are compromised. Poisoned models could systematically produce incorrect legal analysis.",
+      "severity": "high"
+    },
+    {
+      "id": "LLM05:2025",
+      "name": "Improper Output Handling",
+      "description": "Refers to insufficient validation, sanitization, and management of LLM outputs before passing them to downstream systems. LLM-generated content can be influenced by user prompts creating indirect pathways to additional functionality. Successful exploitation can lead to XSS, CSRF, SSRF, privilege escalation, or remote code execution.",
+      "attack_scenarios": [
+        "LLM output entered directly into system shell via exec() or eval() resulting in remote code execution.",
+        "JavaScript generated by LLM reaches browser users unvalidated, causing XSS.",
+        "LLM-generated SQL queries executed without parameterization leading to SQL injection.",
+        "LLM-generated code references hallucinated package names; attacker publishes malicious package under that name."
+      ],
+      "prevention": [
+        "Treat all LLM outputs as untrusted user input using zero-trust approach",
+        "Follow OWASP ASVS for validation and sanitization",
+        "Apply context-aware output encoding",
+        "Use parameterized queries and prepared statements",
+        "Implement strict Content Security Policies",
+        "Deploy robust logging and monitoring for anomalous output patterns"
+      ],
+      "legal_tech_relevance": "High — legal tools that render AI output in web UIs, generate code, or interface with databases are exposed. Document automation tools that pass LLM output directly to template engines are particularly at risk.",
+      "severity": "high"
+    },
+    {
+      "id": "LLM06:2025",
+      "name": "Excessive Agency",
+      "description": "An LLM-based system granted excessive agency — ability to call functions or interface with systems — can trigger damaging actions through unexpected or manipulated outputs. Three root causes: excessive functionality, excessive permissions, and excessive autonomy.",
+      "attack_scenarios": [
+        "LLM email assistant with mail access receives indirect prompt injection via malicious email, autonomously forwards client data to attacker.",
+        "AI legal assistant with document management access deletes or modifies privileged files after prompt manipulation.",
+        "Agentic legal research tool with web access executes unauthorized external API calls leaking matter context."
+      ],
+      "prevention": [
+        "Minimize available tools to essential operations only",
+        "Avoid open-ended capabilities — use granular, purpose-built extensions",
+        "Grant minimum necessary permissions; enforce read-only scopes where appropriate",
+        "Run extensions under individual user credentials, not privileged accounts",
+        "Mandate user confirmation for high-impact actions",
+        "Enforce authorization at downstream systems independent of LLM decision-making",
+        "Log extension behavior and implement rate-limiting"
+      ],
+      "legal_tech_relevance": "Critical — AI legal agents with access to matter management systems, email, or document repositories can cause irreversible harm if manipulated. Autonomous contract execution or filing is a catastrophic failure mode.",
+      "severity": "critical"
+    },
+    {
+      "id": "LLM07:2025",
+      "name": "System Prompt Leakage",
+      "description": "System prompt leakage refers to the exposure of instructions used to guide LLM behavior, which may unintentionally contain sensitive information. The system prompt should not be considered a secret security control — real risk lies in underlying vulnerabilities like improper authorization or exposed credentials embedded in prompts.",
+      "attack_scenarios": [
+        "Attacker extracts credentials embedded in system prompt and uses them for unauthorized API access.",
+        "Attacker extracts guardrail instructions from system prompt, then uses prompt injection to bypass content filters and execute malicious code.",
+        "Competitor extracts proprietary legal analysis methodology encoded in system prompt."
+      ],
+      "prevention": [
+        "Keep credentials, API keys, and access control logic outside system prompts entirely",
+        "Avoid using system prompts to control model behavior where possible — rely on external systems",
+        "Implement external guardrails via independent content inspection systems",
+        "Enforce authorization checks through deterministic, auditable processes outside the model"
+      ],
+      "legal_tech_relevance": "Medium-High — legal AI tools often embed matter context, client identifiers, or proprietary methodology in system prompts. Leakage exposes confidential information and potentially attorney work product.",
+      "severity": "high"
+    },
+    {
+      "id": "LLM08:2025",
+      "name": "Vector and Embedding Weaknesses",
+      "description": "Vulnerabilities in how vectors and embeddings are generated, stored, or retrieved in RAG systems can be exploited to inject harmful content, manipulate model outputs, or access sensitive information. Multi-tenant environments sharing vector databases are particularly exposed to cross-tenant data leakage.",
+      "attack_scenarios": [
+        "Attacker embeds hidden instructions in white text in a resume; RAG system retrieves and processes it, advancing unqualified candidate.",
+        "In multi-tenant legal platform, embeddings from one client matter unintentionally retrieved for another client's queries, violating confidentiality.",
+        "Poisoned document injected into knowledge base alters retrieval results for all downstream queries."
+      ],
+      "prevention": [
+        "Deploy fine-grained access controls and permission-aware vector stores with strict logical partitioning",
+        "Accept data only from verified sources with robust validation pipelines",
+        "Tag and classify knowledge base data to manage access levels",
+        "Maintain immutable logs tracking all retrieval activities"
+      ],
+      "legal_tech_relevance": "Critical — legal RAG tools (case law search, matter knowledge bases) used in multi-client environments can leak privileged information across matters if vector stores lack per-client isolation. Direct Rule 1.7 conflicts-of-interest implication.",
+      "severity": "critical"
+    },
+    {
+      "id": "LLM09:2025",
+      "name": "Misinformation",
+      "description": "Misinformation from LLMs occurs when models produce credible-sounding yet false content, primarily due to hallucinations where models fill gaps using statistical patterns without understanding content. Particularly dangerous in legal contexts where fabricated case citations, statutes, or analysis can cause direct harm.",
+      "real_world_cases": [
+        "Air Canada chatbot provided misinformation to travelers leading to successful litigation against the airline.",
+        "ChatGPT generated fabricated legal cases cited in court filings, resulting in sanctions against attorneys."
+      ],
+      "attack_scenarios": [
+        "Legal research AI generates fabricated case citations that attorney relies on in brief.",
+        "Contract review AI mischaracterizes clause meaning based on hallucinated legal doctrine.",
+        "Supply chain attack: attacker publishes malicious package under hallucinated package name commonly output by code-generation LLMs."
+      ],
+      "prevention": [
+        "Implement Retrieval-Augmented Generation (RAG) with verified legal databases",
+        "Deploy cross-verification and human oversight for all legal citations and analysis",
+        "Clearly disclose AI limitations and hallucination potential to end users",
+        "Use automatic validation tools for high-stakes outputs",
+        "Apply chain-of-thought prompting and model fine-tuning on verified legal corpora",
+        "Include explicit AI-generated content labeling in UI"
+      ],
+      "legal_tech_relevance": "Critical — the most direct malpractice exposure. Fabricated citations, incorrect statutory interpretation, or hallucinated legal standards passed to attorneys or clients constitutes negligence. ABA Model Rule 1.1 Competence requires verification.",
+      "severity": "critical"
+    },
+    {
+      "id": "LLM10:2025",
+      "name": "Unbounded Consumption",
+      "description": "Occurs when an LLM application allows excessive and uncontrolled inferences, leading to denial of service, economic losses, model theft, or service degradation. Attackers exploit LLMs' high computational resource demands to disrupt services, drain financial resources, or replicate model behavior.",
+      "attack_scenarios": [
+        "Attacker submits abnormally large text inputs overwhelming memory and processing capacity.",
+        "High-volume API calls exhaust computational resources rendering service unavailable.",
+        "Denial of Wallet (DoW): excessive operations on pay-per-use cloud model generate unsustainable costs.",
+        "Attacker uses API to generate synthetic training data to clone proprietary legal AI model."
+      ],
+      "prevention": [
+        "Enforce strict input validation with reasonable size thresholds",
+        "Apply rate limiting and user quotas on request frequency",
+        "Implement timeouts and throttling for resource-intensive operations",
+        "Restrict access to logits and logprobs data",
+        "Deploy sandboxing to isolate network resources",
+        "Establish logging and anomaly detection for unusual resource patterns",
+        "Design graceful degradation for high-load scenarios"
+      ],
+      "legal_tech_relevance": "Medium — legal AI platforms serving law firms are high-value targets for DoW attacks. Model theft attempts targeting proprietary legal analysis models represent IP and competitive risk.",
+      "severity": "medium"
+    }
+  ]
+}

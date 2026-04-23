@@ -1,0 +1,148 @@
+{
+  "title": "ABA Model Rules of Professional Conduct — Core Rules for AI Audit",
+  "source": "https://www.americanbar.org/groups/professional_responsibility/publications/model_rules_of_professional_conduct/",
+  "note": "The ABA Model Rules are not binding law but are adopted by most U.S. states, often with modifications. State-specific variations must be checked for jurisdiction-specific compliance.",
+  "rules": [
+    {
+      "id": "1.1",
+      "title": "Competence",
+      "text": "A lawyer shall provide competent representation to a client. Competent representation requires the legal knowledge, skill, thoroughness and preparation reasonably necessary for the representation.",
+      "comment_8": "To maintain the requisite knowledge and skill, a lawyer should keep abreast of changes in the law and its practice, including the benefits and risks associated with relevant technology, engage in continuing study and education and comply with all continuing legal education requirements to which the lawyer is subject.",
+      "ai_application": "Lawyers using AI tools must understand their capabilities and limitations. Uncritical reliance on AI output without independent verification may constitute incompetent representation.",
+      "audit_checks": [
+        "Does the tool clearly identify the AI model powering it?",
+        "Does the tool disclaim its limitations and the need for attorney verification?",
+        "Does the tool provide guidance on appropriate use cases vs. those requiring human judgment?"
+      ]
+    },
+    {
+      "id": "1.4",
+      "title": "Communication",
+      "text": "(a) A lawyer shall: (1) promptly inform the client of any decision or circumstance with respect to which the client's informed consent, as defined in Rule 1.0(e), is required by these Rules; (2) reasonably consult with the client about the means by which the client's objectives are to be accomplished; (3) keep the client reasonably informed about the status of the matter; (4) promptly comply with reasonable requests for information; and (5) consult with the client about any relevant limitation on the lawyer's conduct when the lawyer knows that the client expects assistance not permitted by the Rules of Professional Conduct or other law. (b) A lawyer shall explain a matter to the extent reasonably necessary to permit the client to make informed decisions regarding the representation.",
+      "ai_application": "Lawyers must disclose AI use when it affects the client's matter, particularly when client data is input into AI systems, when AI use affects fees, or when client asks.",
+      "audit_checks": [
+        "Does the tool label AI-generated outputs as such in the user interface?",
+        "Does the tool support disclosure workflows for client communications?",
+        "Can attorneys indicate GAI use in matter notes or engagement materials through the platform?"
+      ]
+    },
+    {
+      "id": "1.6",
+      "title": "Confidentiality of Information",
+      "text": "(a) A lawyer shall not reveal information relating to the representation of a client unless the client gives informed consent, the disclosure is impliedly authorized in order to carry out the representation or the disclosure is permitted by paragraph (b). (b) A lawyer may reveal information relating to the representation of a client to the extent the lawyer reasonably believes necessary to: (1) prevent reasonably certain death or substantial bodily harm; (2) prevent the client from committing a crime or fraud... (c) A lawyer shall make reasonable efforts to prevent the inadvertent or unauthorized disclosure of, or unauthorized access to, information relating to the representation of a client.",
+      "comment_18": "The duty of confidentiality continues after the client-lawyer relationship has terminated.",
+      "ai_application": "Sending client data to third-party AI APIs may constitute disclosure requiring informed consent. Self-learning AI tools that train on input data create ongoing confidentiality risks. Rule 1.6(c) imposes affirmative duty to implement security measures.",
+      "audit_checks": [
+        "Does the tool send client data to external AI APIs?",
+        "What is the AI provider's data retention and training policy?",
+        "Is there a DPA/BAA with the AI provider?",
+        "Is client data encrypted in transit and at rest?",
+        "Is there a data deletion mechanism for client data?",
+        "Are access logs maintained to detect unauthorized access?"
+      ]
+    },
+    {
+      "id": "1.7",
+      "title": "Conflict of Interest: Current Clients",
+      "text": "(a) Except as provided in paragraph (b), a lawyer shall not represent a client if the representation involves a concurrent conflict of interest. A concurrent conflict of interest exists if: (1) the representation of one client will be directly adverse to another client; or (2) there is a significant risk that the representation of one or more clients will be materially limited by the lawyer's responsibilities to another client, a former client or a third person or by a personal interest of the lawyer.",
+      "ai_application": "AI systems processing data from multiple clients risk cross-matter data leakage, creating constructive conflicts of interest. Multi-tenant AI platforms without proper data isolation may create systemic conflicts problems.",
+      "audit_checks": [
+        "Does the tool implement per-matter or per-client data isolation?",
+        "Can data from one client's matter influence AI outputs for another client?",
+        "Is there a conflicts screening workflow before matter intake?",
+        "Are vector databases (RAG systems) partitioned by client/matter?"
+      ]
+    },
+    {
+      "id": "1.9",
+      "title": "Duties to Former Clients",
+      "text": "(a) A lawyer who has formerly represented a client in a matter shall not thereafter represent another person in the same or a substantially related matter in which that person's interests are materially adverse to the interests of the former client unless the former client gives informed consent, confirmed in writing.",
+      "ai_application": "AI systems retaining matter data from former client representations may surface that data in ways adverse to former clients. Data retention policies must account for ongoing conflicts obligations.",
+      "audit_checks": [
+        "Is former client data purged or isolated after matter close?",
+        "Can AI systems trained on former client data inadvertently surface that information?",
+        "Is there a matter lifecycle data management policy?"
+      ]
+    },
+    {
+      "id": "3.1",
+      "title": "Meritorious Claims and Contentions",
+      "text": "A lawyer shall not bring or defend a proceeding, or assert or controvert an issue therein, unless there is a basis in law and fact for doing so that is not frivolous, which includes a good faith argument for an extension, modification or reversal of existing law.",
+      "ai_application": "Reliance on AI-generated legal research without verification may result in asserting positions lacking any basis in law. Fabricated AI citations undermine this duty.",
+      "audit_checks": [
+        "Does the tool verify legal citations before presenting them?",
+        "Does the tool warn when generating legal arguments that require independent verification?",
+        "Are outputs grounded in authoritative sources via RAG, or generated from model weights alone?"
+      ]
+    },
+    {
+      "id": "3.3",
+      "title": "Candor Toward the Tribunal",
+      "text": "(a) A lawyer shall not knowingly: (1) make a false statement of fact or law to a tribunal or fail to correct a false statement of material fact or law previously made to the tribunal by the lawyer; (2) fail to disclose to the tribunal legal authority in the directly adverse controlling jurisdiction known to the lawyer and not disclosed by opposing counsel; or (3) offer evidence that the lawyer knows to be false.",
+      "ai_application": "Lawyers who submit AI-generated court filings with fabricated citations violate Rule 3.3. Numerous courts have sanctioned attorneys for AI hallucinations in filed documents.",
+      "audit_checks": [
+        "Does the tool generate court-filing-ready content? If so, are citations verified?",
+        "Does the tool warn that outputs must be verified before filing with a tribunal?",
+        "Is there a 'verified by attorney' attestation workflow?"
+      ]
+    },
+    {
+      "id": "5.3",
+      "title": "Responsibilities Regarding Nonlawyer Assistance",
+      "text": "With respect to a nonlawyer employed or retained by or associated with a lawyer: (a) a partner, and a lawyer who individually or together with other lawyers possesses comparable managerial authority in a law firm shall make reasonable efforts to ensure that the firm has in effect measures giving reasonable assurance that the person's conduct is compatible with the professional obligations of the lawyer; (b) a lawyer having direct supervisory authority over the nonlawyer shall make reasonable efforts to ensure that the person's conduct is compatible with the professional obligations of the lawyer.",
+      "ai_application": "AI tools are treated as nonlawyer assistants under this rule. Supervisory lawyers must establish policies governing AI use and ensure AI outputs are reviewed before reaching clients.",
+      "audit_checks": [
+        "Is there a human-in-the-loop review requirement for AI outputs delivered to clients?",
+        "Does the tool support workflow controls requiring attorney approval before final delivery?",
+        "Is there an audit trail of attorney review of AI-generated work product?"
+      ]
+    },
+    {
+      "id": "5.5",
+      "title": "Unauthorized Practice of Law; Multijurisdictional Practice of Law",
+      "text": "(a) A lawyer shall not practice law in a jurisdiction in violation of the regulation of the legal profession in that jurisdiction, or assist another in doing so. (b) A lawyer who is not admitted to practice in this jurisdiction shall not: (1) except as authorized by these Rules or other law, establish an office or other systematic and continuous presence in this jurisdiction for the practice of law; or (2) hold out to the public or otherwise represent that the lawyer is admitted to practice law in this jurisdiction.",
+      "ai_application": "AI tools that provide specific legal advice without attorney oversight may constitute unauthorized practice of law (UPL). Tools that hold themselves out as providing 'legal advice' rather than 'legal information' risk UPL violations.",
+      "audit_checks": [
+        "Does the tool provide 'legal advice' (specific recommendations for a situation) vs. 'legal information' (general explanations)?",
+        "Is there a disclaimer that the tool does not constitute legal advice and does not create an attorney-client relationship?",
+        "Is there attorney oversight before advice-level outputs reach users?",
+        "Does the tool operate across jurisdictions? Are jurisdiction-specific disclaimers present?"
+      ]
+    },
+    {
+      "id": "1.5",
+      "title": "Fees",
+      "text": "(a) A lawyer shall not make an agreement for, charge, or collect an unreasonable fee or an unreasonable amount for expenses.",
+      "ai_application": "Under Opinion 512: lawyers may not charge clients for time necessitated by their own inexperience with AI. AI efficiency gains should reduce, not inflate, hourly billing. Tool costs may be treated as overhead or passed through at cost, not marked up.",
+      "audit_checks": [
+        "Does the tool provide transparency into AI operation costs per matter?",
+        "Is there time-tracking integration that accurately reflects attorney AI-assisted work?",
+        "Does the tool's billing integration prevent double-billing for AI-generated content?"
+      ]
+    }
+  ],
+  "state_variations": {
+    "note": "The following states have issued AI-specific ethics guidance that may differ from ABA Model Rules.",
+    "new_york": {
+      "opinion": "NY State Bar Association Task Force on Artificial Intelligence, Report and Recommendations (2024)",
+      "key_divergences": [
+        "More prescriptive on disclosure requirements to clients",
+        "Specific guidance on AI use in litigation"
+      ]
+    },
+    "california": {
+      "opinion": "State Bar of California, Practical Guidance for the Use of Generative Artificial Intelligence in the Practice of Law (2024)",
+      "key_divergences": [
+        "Broader confidentiality protections under CA Rules",
+        "Specific guidance on competency requirements for AI tools"
+      ]
+    },
+    "florida": {
+      "opinion": "Florida Bar Professional Ethics Committee, Proposed Advisory Opinion 24-1 (2024)",
+      "key_divergences": [
+        "Mandatory disclosure of AI use in court filings proposed",
+        "Specific supervision requirements for AI-generated work product"
+      ]
+    }
+  }
+}

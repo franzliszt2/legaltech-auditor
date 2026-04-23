@@ -1,0 +1,122 @@
+{
+  "title": "OWASP Top 10 Web Application Security Risks 2025",
+  "version": "2025",
+  "source": "https://owasp.org/Top10/2025/",
+  "items": [
+    {
+      "id": "A01:2025",
+      "name": "Broken Access Control",
+      "description": "Restrictions on what authenticated users are allowed to do are often not properly enforced. Attackers can exploit these flaws to access unauthorized functionality or data, such as accessing other users' accounts, viewing sensitive files, or modifying access rights.",
+      "legal_tech_relevance": "Critical — missing authorization on document endpoints, matter files, or client records. A user from Firm A accessing Firm B's matters. Missing per-matter access controls in multi-tenant systems.",
+      "key_checks": [
+        "Is authorization enforced on every document/matter endpoint?",
+        "Are insecure direct object references (IDOR) possible on client IDs or matter IDs?",
+        "Is there metadata-based access control or only URL-based?",
+        "Can users escalate roles (e.g., paralegal accessing attorney-only views)?"
+      ]
+    },
+    {
+      "id": "A02:2025",
+      "name": "Security Misconfiguration",
+      "description": "Security misconfiguration is the most commonly seen issue. This includes insecure default configurations, incomplete configurations, open cloud storage, misconfigured HTTP headers, and verbose error messages containing sensitive information.",
+      "legal_tech_relevance": "High — public S3 buckets containing client documents, verbose error messages exposing stack traces with matter context, default credentials on admin panels.",
+      "key_checks": [
+        "Are storage buckets (S3, GCS, Azure Blob) private?",
+        "Are error messages suppressed in production?",
+        "Are default framework credentials changed?",
+        "Is CORS configured restrictively?"
+      ]
+    },
+    {
+      "id": "A03:2025",
+      "name": "Software Supply Chain Failures",
+      "description": "Vulnerable or outdated components including libraries, frameworks, and dependencies with known vulnerabilities. This category now explicitly encompasses supply chain risks including compromised packages and dependencies.",
+      "legal_tech_relevance": "High — legal AI tools built on LangChain, LlamaIndex, FastAPI with known CVEs. NPM/PyPI dependency chains may include compromised packages.",
+      "key_checks": [
+        "Are all dependencies current with no known CVEs (check via OSV API)?",
+        "Is there a lockfile committed (package-lock.json, requirements.txt with pinned versions)?",
+        "Are LLM framework dependencies (LangChain, LlamaIndex) on patched versions?"
+      ]
+    },
+    {
+      "id": "A04:2025",
+      "name": "Cryptographic Failures",
+      "description": "Failures related to cryptography (or lack thereof) often leading to exposure of sensitive data. Includes data transmitted in cleartext, weak cryptographic algorithms, improper key management, and missing encryption at rest.",
+      "legal_tech_relevance": "Critical — attorney-client privileged documents, PII, and matter data must be encrypted in transit and at rest. Cleartext transmission violates Rule 1.6.",
+      "key_checks": [
+        "Is HTTPS enforced everywhere (HSTS headers)?",
+        "Are documents and database fields encrypted at rest?",
+        "Are API keys and secrets stored in environment variables, not hardcoded?",
+        "Is JWT signing using a strong algorithm (RS256, not HS256 with weak secret)?"
+      ]
+    },
+    {
+      "id": "A05:2025",
+      "name": "Injection",
+      "description": "Injection flaws occur when untrusted data is sent to an interpreter as part of a command or query. Includes SQL injection, NoSQL injection, OS command injection, and — critically for AI systems — prompt injection.",
+      "legal_tech_relevance": "Critical — SQL injection in matter search, prompt injection in AI document analysis, command injection in document processing pipelines.",
+      "key_checks": [
+        "Are database queries parameterized (no string concatenation with user input)?",
+        "Are LLM inputs sanitized before inclusion in prompts?",
+        "Is there input validation on all user-facing fields?"
+      ]
+    },
+    {
+      "id": "A06:2025",
+      "name": "Insecure Design",
+      "description": "A new category focused on risks related to design and architectural flaws, calling for more use of threat modeling, secure design patterns, and reference architectures. Distinct from implementation flaws.",
+      "legal_tech_relevance": "High — vibe-coded legal tools often skip threat modeling entirely. Missing conflicts-check workflows, no data isolation between matters, AI outputs fed directly to clients without review layer.",
+      "key_checks": [
+        "Is there a conflicts-check mechanism before matter data is processed?",
+        "Is there a human review layer between AI outputs and client-facing content?",
+        "Are AI outputs labeled as AI-generated in the UI?"
+      ]
+    },
+    {
+      "id": "A07:2025",
+      "name": "Authentication Failures",
+      "description": "Incorrectly implemented authentication and session management, allowing attackers to compromise passwords, keys, session tokens, or exploit implementation flaws to assume other users' identities.",
+      "legal_tech_relevance": "Critical — unauthorized access to matter files, client PII, and privileged communications. Weak session management enables impersonation of attorneys or clients.",
+      "key_checks": [
+        "Is MFA implemented for attorney/admin access?",
+        "Are sessions invalidated on logout?",
+        "Are JWT tokens short-lived with refresh token rotation?",
+        "Is there brute-force protection on login endpoints?"
+      ]
+    },
+    {
+      "id": "A08:2025",
+      "name": "Software or Data Integrity Failures",
+      "description": "Failures related to code and infrastructure that does not protect against integrity violations. Includes insecure deserialization and CI/CD pipeline integrity, and extends to AI model integrity.",
+      "legal_tech_relevance": "Medium — CI/CD pipeline compromise could deploy malicious versions of legal AI tools. Unsigned model artifacts could be tampered with.",
+      "key_checks": [
+        "Is the CI/CD pipeline protected against unauthorized deployments?",
+        "Are model artifacts checksummed/verified before loading?",
+        "Is deserialization of untrusted data avoided?"
+      ]
+    },
+    {
+      "id": "A09:2025",
+      "name": "Security Logging and Alerting Failures",
+      "description": "Without logging and monitoring, breaches cannot be detected. This category covers insufficient logging, lack of monitoring and alerting, and log data that is insufficient for forensic analysis.",
+      "legal_tech_relevance": "High — law firms require audit trails for malpractice defense and bar ethics investigations. Missing access logs make it impossible to determine if privileged data was accessed inappropriately.",
+      "key_checks": [
+        "Are all document access events logged with user identity and timestamp?",
+        "Are AI query logs retained (what was asked, what was returned)?",
+        "Are failed authentication attempts logged and alerted?",
+        "Is PII excluded from logs?"
+      ]
+    },
+    {
+      "id": "A10:2025",
+      "name": "Mishandling of Exceptional Conditions",
+      "description": "Applications that fail to properly handle errors and exceptions can expose sensitive information, allow bypasses of security controls, or create unpredictable behavior that attackers can exploit.",
+      "legal_tech_relevance": "Medium — error messages that expose client data or system architecture. AI pipeline failures that silently return incorrect results rather than failing safely.",
+      "key_checks": [
+        "Are unhandled exceptions returning stack traces to users?",
+        "Do AI pipeline failures fail safely (error state vs. silent wrong output)?",
+        "Are error responses generic to avoid information disclosure?"
+      ]
+    }
+  ]
+}

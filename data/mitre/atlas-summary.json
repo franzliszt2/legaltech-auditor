@@ -1,0 +1,133 @@
+{
+  "title": "MITRE ATLAS — Adversarial Threat Landscape for AI Systems",
+  "version": "5.5.0",
+  "source": "https://atlas.mitre.org/",
+  "data_repo": "https://github.com/mitre-atlas/atlas-data",
+  "full_data_file": "./ATLAS.yaml",
+  "description": "MITRE ATLAS is a globally accessible, living knowledge base of adversary tactics and techniques against AI/ML systems. Analogous to MITRE ATT&CK but specifically for AI attack surfaces.",
+  "stats": {
+    "tactics": 16,
+    "techniques": 84,
+    "sub_techniques": 56,
+    "mitigations": 32,
+    "case_studies": 42
+  },
+  "tactics": [
+    {
+      "id": "AML.TA0002",
+      "name": "Reconnaissance",
+      "description": "Adversary gathers information about the AI system to plan future operations. Includes identifying AI capabilities, research efforts, model types used.",
+      "legal_tech_relevance": "Attackers may probe legal AI tools to identify underlying models, training data, or system prompt content before launching more targeted attacks."
+    },
+    {
+      "id": "AML.TA0003",
+      "name": "Resource Development",
+      "description": "Adversary creates, purchases, or compromises AI artifacts, infrastructure, accounts, or capabilities to support operations.",
+      "legal_tech_relevance": "Competitors or adversaries may develop adversarial documents or prompts specifically targeting a legal AI tool's known weaknesses."
+    },
+    {
+      "id": "AML.TA0004",
+      "name": "Initial Access",
+      "description": "Adversary gains initial access to the AI system via various entry vectors.",
+      "legal_tech_relevance": "Unauthorized access to a legal AI platform's API or admin interface."
+    },
+    {
+      "id": "AML.TA0000",
+      "name": "AI Model Access",
+      "description": "Adversary gains varying levels of access to an AI model — from full internals knowledge to API access to indirect interaction through a product.",
+      "legal_tech_relevance": "Legal AI tools that expose model APIs without proper authentication enable model extraction or adversarial probing."
+    },
+    {
+      "id": "AML.TA0005",
+      "name": "Execution",
+      "description": "Adversary runs malicious code embedded in AI artifacts or software.",
+      "legal_tech_relevance": "Malicious code in AI-generated output (e.g., code suggestions) or compromised model artifacts."
+    },
+    {
+      "id": "AML.TA0006",
+      "name": "Persistence",
+      "description": "Adversary maintains foothold via AI artifacts or software — e.g., poisoned training data or manipulated models.",
+      "legal_tech_relevance": "Backdoored legal AI models that persist malicious behavior across deployments."
+    },
+    {
+      "id": "AML.TA0012",
+      "name": "Privilege Escalation",
+      "description": "Adversary gains higher-level permissions by exploiting system weaknesses or misconfigurations.",
+      "legal_tech_relevance": "Escalating from client-level to attorney-level access in a legal platform."
+    },
+    {
+      "id": "AML.TA0007",
+      "name": "Defense Evasion",
+      "description": "Adversary avoids detection by AI-enabled security software.",
+      "legal_tech_relevance": "Crafting inputs that bypass content filters in legal AI tools while still achieving malicious objectives."
+    },
+    {
+      "id": "AML.TA0013",
+      "name": "Credential Access",
+      "description": "Adversary steals account names, passwords, or API keys — including through system prompt extraction.",
+      "legal_tech_relevance": "Extracting API keys or credentials embedded in system prompts of legal AI tools."
+    },
+    {
+      "id": "AML.TA0009",
+      "name": "Discovery",
+      "description": "Adversary tries to figure out the AI environment — model architecture, training data, system configuration.",
+      "legal_tech_relevance": "Probing legal AI tools to discover what client data they have access to, what databases they connect to, or what the system prompt instructs."
+    },
+    {
+      "id": "AML.TA0010",
+      "name": "Collection",
+      "description": "Adversary collects data of interest including training data, model outputs, and sensitive application data.",
+      "legal_tech_relevance": "Exfiltrating client matter data, privileged communications, or attorney work product via AI system vulnerabilities."
+    },
+    {
+      "id": "AML.TA0011",
+      "name": "Exfiltration",
+      "description": "Adversary steals data or model artifacts from the AI system.",
+      "legal_tech_relevance": "Model theft (replicating proprietary legal AI) or client data exfiltration via compromised AI pipeline."
+    },
+    {
+      "id": "AML.TA0008",
+      "name": "Impact",
+      "description": "Adversary manipulates, interrupts, or destroys systems and data, including corrupting model outputs or denying service.",
+      "legal_tech_relevance": "Corrupting legal AI outputs to cause incorrect legal analysis, denying service to critical deadline-driven legal workflows, or manipulating AI-assisted filings."
+    }
+  ],
+  "high_priority_techniques_for_legal_ai": [
+    {
+      "id": "AML.T0051",
+      "name": "LLM Prompt Injection",
+      "tactic": "Execution",
+      "description": "Attacker crafts inputs that override or manipulate LLM system instructions.",
+      "legal_relevance": "Direct attack vector against legal AI tools processing adversarial documents"
+    },
+    {
+      "id": "AML.T0054",
+      "name": "LLM Jailbreak",
+      "tactic": "Defense Evasion",
+      "description": "Bypassing safety restrictions or ethical guidelines of an LLM.",
+      "legal_relevance": "Bypassing content filters in legal advice tools to extract improper guidance"
+    },
+    {
+      "id": "AML.T0012",
+      "name": "Valid Accounts",
+      "tactic": "Initial Access",
+      "description": "Using legitimate credentials to gain access.",
+      "legal_relevance": "Compromised attorney credentials used to access privileged client matter data"
+    },
+    {
+      "id": "AML.T0043",
+      "name": "Craft Adversarial Data",
+      "tactic": "Resource Development",
+      "description": "Creating data specifically designed to manipulate AI model behavior.",
+      "legal_relevance": "Crafting adversarial contracts designed to manipulate AI contract review tools"
+    },
+    {
+      "id": "AML.T0025",
+      "name": "Exfiltration via ML Inference API",
+      "tactic": "Exfiltration",
+      "description": "Using model inference to extract training data or client data.",
+      "legal_relevance": "Extracting client data memorized by fine-tuned legal AI models"
+    }
+  ],
+  "note": "Full ATLAS data including all 84 techniques and 42 case studies is available in ATLAS.yaml in this directory. The YAML is the authoritative source."
+}

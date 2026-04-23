@@ -1,0 +1,260 @@
+import Anthropic from "@anthropic-ai/sdk";
+import type { RepoBundle, TriageMap, Finding, AuditReport, OverallScore } from "./types";
+import { buildSecurityContext, buildEthicsContext } from "./context";
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const MODEL = "claude-sonnet-4-6";
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatFiles(
+  bundle: RepoBundle,
+  paths?: string[]
+): string {
+  const files = paths
+    ? bundle.files.filter((f) => paths.includes(f.path))
+    : bundle.files;
+  return files
+    .map((f) => `### ${f.path}\n\`\`\`\n${f.content.slice(0, 8000)}\n\`\`\``)
+    .join("\n\n");
+}
+
+function extractJson<T>(text: string): T {
+  const match = text.match(/```(?:json)?\s*([\s\S]+?)```/) ??
+    text.match(/(\{[\s\S]+\}|\[[\s\S]+\])/);
+  if (!match) throw new Error("No JSON found in model response");
+  return JSON.parse(match[1].trim()) as T;
+}
+
+function scoreFindings(findings: Finding[]): OverallScore {
+  const hasCritical = findings.some((f) => f.severity === "critical");
+  const highCount = findings.filter((f) => f.severity === "high").length;
+  if (hasCritical || highCount >= 3) return "FAIL";
+  if (highCount >= 1 || findings.some((f) => f.severity === "medium")) return "CONDITIONAL";
+  return "PASS";
+}
+
+// ── Stage 1: Triage ───────────────────────────────────────────────────────────
+
+const TRIAGE_SCHEMA = `{
+  "securityPaths": ["path/to/file"],
+  "ethicsPaths": ["path/to/file"],
+  "aiRiskPaths": ["path/to/file"],
+  "notableFeatures": ["brief description of notable feature"],
+  "probableAppType": "e.g. AI contract reviewer / client intake assistant",
+  "isLegalTech": true
+}`;
+
+export async function runTriage(bundle: RepoBundle): Promise<TriageMap> {
+  const manifest = bundle.files.map((f) => `${f.type.padEnd(10)} ${f.path}`).join("\n");
+  const snippets = bundle.files
+    .slice(0, 10)
+    .map((f) => `### ${f.path}\n${f.content.slice(0, 600)}`)
+    .join("\n\n");
+
+  const response = await anthropic.messages.create({
+    model: MODEL,
+    max_tokens: 1024,
+    system:
+      "You are a legal-tech security auditor performing an initial triage of a repository. " +
+      "Classify files into audit categories and identify key application features. " +
+      "Respond only with a JSON code block matching the requested schema. No commentary.",
+    messages: [
+      {
+        role: "user",
+        content: `Repository: ${bundle.repo}
+
+FILE MANIFEST:
+${manifest}
+
+FILE SNIPPETS (first 10 files):
+${snippets}
+
+Classify this repository and return JSON matching this schema exactly:
+\`\`\`json
+${TRIAGE_SCHEMA}
+\`\`\`
+
+Rules:
+- securityPaths: files most relevant to auth, data access, storage, logging, API security
+- ethicsPaths: files relevant to user-facing outputs, disclaimers, AI disclosure, client data handling
+- aiRiskPaths: files containing prompts, model calls, chat endpoints, retrieval logic
+- Include only paths that actually exist in the manifest above`,
+      },
+    ],
+  });
+
+  const text = response.content[0].type === "text" ? response.content[0].text : "";
+  return extractJson<TriageMap>(text);
+}
+
+// ── Stage 2: Security + AI Risk ───────────────────────────────────────────────
+
+const FINDING_SCHEMA = `[
+  {
+    "id": "sec-001",
+    "module": "security",
+    "severity": "critical",
+    "title": "Short descriptive title",
+    "description": "What the issue is, where it appears, and why it matters in a legal-tech context.",
+    "file": "path/to/file",
+    "ruleReference": "OWASP A01:2025 — Broken Access Control",
+    "remediation": "Concrete, technically actionable fix."
+  }
+]`;
+
+export async function runSecurityAudit(
+  bundle: RepoBundle,
+  triage: TriageMap
+): Promise<Finding[]> {
+  const secContext = buildSecurityContext();
+  const allPaths = [...new Set([...triage.securityPaths, ...triage.aiRiskPaths])];
+  const codeBlock = formatFiles(bundle, allPaths.length ? allPaths : undefined);
+
+  const response = await anthropic.messages.create({
+    model: MODEL,
+    max_tokens: 4096,
+    system: [
+      {
+        type: "text",
+        text: secContext,
+        cache_control: { type: "ephemeral" },
+      },
+      {
+        type: "text",
+        text:
+          "You are a security auditor specializing in legal technology applications. " +
+          "You have deep knowledge of OWASP Top 10, OWASP LLM Top 10, and MITRE ATLAS (all provided above). " +
+          "Analyze the provided code for security vulnerabilities and AI-specific risks. " +
+          "Only report findings grounded in visible code evidence. " +
+          "Map each finding to a specific OWASP or MITRE ATLAS reference. " +
+          "Respond only with a JSON code block — an array of findings. No commentary.",
+      },
+    ],
+    messages: [
+      {
+        role: "user",
+        content: `Repository: ${bundle.repo}
+Probable app type: ${triage.probableAppType}
+Notable features: ${triage.notableFeatures.join(", ")}
+
+FILES FOR SECURITY + AI RISK ANALYSIS:
+${codeBlock}
+
+Return a JSON array of findings covering both security (module: "security") and AI-specific risks (module: "ai-risk").
+Focus on: authentication gaps, authorization issues, hardcoded secrets, insecure data handling, logging of PII,
+prompt injection surfaces, system prompt exposure, ungrounded legal AI outputs, and dangerous storage configurations.
+Each finding MUST reference a specific file from the list above.
+
+Schema:
+\`\`\`json
+${FINDING_SCHEMA}
+\`\`\``,
+      },
+    ],
+  });
+
+  const text = response.content[0].type === "text" ? response.content[0].text : "[]";
+  return extractJson<Finding[]>(text);
+}
+
+// ── Stage 3: Ethics ───────────────────────────────────────────────────────────
+
+export async function runEthicsAudit(
+  bundle: RepoBundle,
+  triage: TriageMap
+): Promise<Finding[]> {
+  const ethicsContext = buildEthicsContext();
+  const codeBlock = formatFiles(
+    bundle,
+    triage.ethicsPaths.length ? triage.ethicsPaths : undefined
+  );
+
+  const response = await anthropic.messages.create({
+    model: MODEL,
+    max_tokens: 4096,
+    system: [
+      {
+        type: "text",
+        text: ethicsContext,
+        cache_control: { type: "ephemeral" },
+      },
+      {
+        type: "text",
+        text:
+          "You are a legal ethics auditor reviewing a legal technology application for compliance " +
+          "with the ABA Model Rules of Professional Conduct and ABA Formal Opinion 512 (2024), both provided above. " +
+          "Analyze the application for attorney ethics risks. " +
+          "Only report findings grounded in visible code, UI copy, or workflow evidence. " +
+          "Map each finding to a specific ABA Model Rule or Opinion 512 section. " +
+          "Respond only with a JSON code block — an array of findings. No commentary.",
+      },
+    ],
+    messages: [
+      {
+        role: "user",
+        content: `Repository: ${bundle.repo}
+Probable app type: ${triage.probableAppType}
+Notable features: ${triage.notableFeatures.join(", ")}
+
+FILES FOR ETHICS ANALYSIS:
+${codeBlock}
+
+Return a JSON array of findings (module: "ethics") covering:
+- Missing "not legal advice" or AI limitation disclaimers (Rule 1.1, Opinion 512)
+- No disclosure that outputs are AI-generated (Rule 1.4, Opinion 512)
+- Client data transmitted to third-party AI APIs without disclosure (Rule 1.6)
+- No human-in-the-loop review before client-facing outputs (Rule 5.3)
+- No conflicts check or matter separation (Rules 1.7, 1.9)
+- AI providing specific legal advice without attorney oversight (Rule 5.5 — UPL risk)
+- Inadequate data retention or deletion controls (Rule 1.6(c))
+Each finding MUST reference a specific file or UI element from the code above.
+
+Schema:
+\`\`\`json
+${FINDING_SCHEMA}
+\`\`\``,
+      },
+    ],
+  });
+
+  const text = response.content[0].type === "text" ? response.content[0].text : "[]";
+  return extractJson<Finding[]>(text);
+}
+
+// ── Stage 4: Report Assembly ──────────────────────────────────────────────────
+
+const SUMMARY_TEMPLATES: Record<OverallScore, string> = {
+  FAIL:
+    "This application presents serious security and/or legal ethics risks that must be addressed before deployment in a legal practice context.",
+  CONDITIONAL:
+    "This application has notable security or ethics gaps that should be remediated before handling real client data or attorney-client privileged information.",
+  PASS:
+    "This application presents low immediate risk, but continued monitoring and periodic re-audit are recommended as the codebase evolves.",
+};
+
+export async function assembleReport(
+  repo: string,
+  findings: Finding[]
+): Promise<AuditReport> {
+  const deduplicated = findings.filter(
+    (f, i, arr) => arr.findIndex((x) => x.title === f.title && x.file === f.file) === i
+  );
+
+  const severityOrder: Record<string, number> = {
+    critical: 0, high: 1, medium: 2, low: 3, info: 4,
+  };
+  const sorted = [...deduplicated].sort(
+    (a, b) => (severityOrder[a.severity] ?? 5) - (severityOrder[b.severity] ?? 5)
+  );
+
+  const score = scoreFindings(sorted);
+
+  return {
+    repo,
+    timestamp: new Date().toISOString(),
+    overallScore: score,
+    summary: SUMMARY_TEMPLATES[score],
+    findings: sorted,
+  };
+}
