@@ -9,7 +9,162 @@ import type { AuditReport, ProgressEvent, ProgressStage } from "@/lib/types";
 
 type AppState = "idle" | "running" | "done" | "error";
 
-const DEMO = "https://github.com/franzliszt2/vulnerable-legaltech-demo";
+// ── Sample report for instant demo ────────────────────────────────────
+const SAMPLE_REPO = "github.com/meridian-legal/ai-platform";
+
+const SAMPLE_REPORT: AuditReport = {
+  repo: SAMPLE_REPO,
+  timestamp: "2026-04-23T09:14:00.000Z",
+  overallScore: "FAIL",
+  summary:
+    "This application presents serious security and legal ethics risks that must be addressed before deployment in a legal practice context.",
+  findings: [
+    {
+      id: "sec-001",
+      module: "security",
+      severity: "critical",
+      title: "API key hardcoded in source",
+      description:
+        "An OpenAI API key is committed directly to src/lib/ai.ts. Any party with repository access can extract and abuse this credential to exfiltrate data or run unauthorized queries.",
+      file: "src/lib/ai.ts",
+      ruleReference: "OWASP A07:2025 — Identification and Authentication Failures",
+      remediation:
+        "Rotate the exposed key immediately. Move all credentials to environment variables and add a secret scanner (e.g. Gitleaks) to the CI pipeline.",
+    },
+    {
+      id: "sec-002",
+      module: "security",
+      severity: "high",
+      title: "Unauthenticated document retrieval endpoint",
+      description:
+        "GET /api/documents/[id] returns client files by ID with no identity verification. Any unauthenticated actor can enumerate and access privileged matter documents.",
+      file: "src/app/api/documents/[id]/route.ts",
+      ruleReference: "OWASP A01:2025 — Broken Access Control",
+      remediation:
+        "Add session-based authentication middleware and verify that the requesting user is authorized to access the specific document ID before returning data.",
+    },
+    {
+      id: "sec-003",
+      module: "security",
+      severity: "high",
+      title: "No rate limiting on AI inference endpoint",
+      description:
+        "The /api/chat endpoint accepts unlimited concurrent requests. This exposes the application to prompt injection at scale and unbounded cost amplification against the operator's API key.",
+      file: "src/app/api/chat/route.ts",
+      ruleReference: "OWASP LLM04:2025 — Model Denial of Service",
+      remediation:
+        "Implement per-user rate limiting (20 req/min). Add request body size limits and anomalous usage alerting.",
+    },
+    {
+      id: "sec-004",
+      module: "security",
+      severity: "medium",
+      title: "System prompt returned in API response",
+      description:
+        "The full system prompt — including internal role definitions and instructions — is included in the API response body, leaking proprietary prompt engineering and surfacing adversarial attack vectors.",
+      file: "src/app/api/chat/route.ts",
+      ruleReference: "OWASP LLM07:2025 — System Prompt Leakage",
+      remediation:
+        "Strip system prompt content from all client-facing API responses. Return only the assistant message content.",
+    },
+    {
+      id: "priv-001",
+      module: "security",
+      severity: "high",
+      title: "Attorney-client conversations stored in plaintext",
+      description:
+        "Conversation histories are persisted to the database without encryption. A storage-layer compromise would expose privileged communications across all matters.",
+      file: "src/lib/db.ts",
+      ruleReference: "ABA Model Rule 1.6 — Confidentiality of Information",
+      remediation:
+        "Enable column-level encryption for conversation and document tables. Consider application-layer encryption for the most sensitive fields.",
+    },
+    {
+      id: "priv-002",
+      module: "security",
+      severity: "medium",
+      title: "Client PII written to application logs",
+      description:
+        "Client names, email addresses, and matter descriptions are written to stdout during upload and chat processing. These logs are accessible to infrastructure operators and may be retained indefinitely.",
+      file: "src/app/api/upload/route.ts",
+      ruleReference: "ABA Model Rule 1.6 — Confidentiality of Information",
+      remediation:
+        "Remove PII from all log statements. Replace identifiers with pseudonymized tokens for debugging purposes.",
+    },
+    {
+      id: "priv-003",
+      module: "security",
+      severity: "medium",
+      title: "No data retention or deletion mechanism",
+      description:
+        "Matter data accumulates indefinitely with no retention policy and no client-facing deletion workflow. There is no mechanism for attorneys or clients to exercise data subject rights.",
+      file: "src/lib/db.ts",
+      ruleReference: "ABA Model Rule 1.6(c) — Reasonable Data Security",
+      remediation:
+        "Document a retention policy and implement a deletion workflow. Provide attorneys with the ability to purge matter data on case close or client request.",
+    },
+    {
+      id: "eth-001",
+      module: "ethics",
+      severity: "high",
+      title: "No legal advice disclaimer on AI outputs",
+      description:
+        "AI-generated contract analysis and legal summaries are presented to end users without any disclaimer that the content is not legal advice and has not been reviewed by a licensed attorney.",
+      file: "src/components/ChatInterface.tsx",
+      ruleReference: "ABA Formal Opinion 512 (2024); ABA Model Rule 1.1 — Competence",
+      remediation:
+        "Add a persistent disclaimer to all AI-generated outputs: 'This analysis is AI-generated and does not constitute legal advice. Attorney review is required before reliance.'",
+    },
+    {
+      id: "eth-002",
+      module: "ethics",
+      severity: "medium",
+      title: "AI outputs not labeled as AI-generated",
+      description:
+        "Contract summaries and legal analysis are surfaced in the UI without indicating they are AI-generated. End users may mistake them for attorney-reviewed work product.",
+      file: "src/components/ResultsView.tsx",
+      ruleReference: "ABA Model Rule 1.4 — Communication; ABA Formal Opinion 512 §III.B",
+      remediation:
+        "Label all AI-generated content in the UI with the model name and generation timestamp. Distinguish AI output visually from attorney-authored content.",
+    },
+    {
+      id: "eth-003",
+      module: "ethics",
+      severity: "medium",
+      title: "No attorney review gate before client delivery",
+      description:
+        "AI-generated documents flow directly to the client-facing interface without a mandatory attorney review step. No workflow or UI gate enforces human-in-the-loop supervision before delivery.",
+      file: "src/app/api/documents/generate/route.ts",
+      ruleReference: "ABA Model Rule 5.3 — Responsibilities Regarding Nonlawyer Assistance",
+      remediation:
+        "Implement a review queue requiring attorney approval before any AI-generated content is delivered to a client. Log all approvals with timestamp and reviewer identity.",
+    },
+    {
+      id: "legal-001",
+      module: "ethics",
+      severity: "high",
+      title: "No conflicts of interest check on matter creation",
+      description:
+        "New matters can be opened and AI analysis can begin without any check against existing clients or adverse parties. Cross-matter conflicts go undetected by the system.",
+      file: "src/app/api/matters/route.ts",
+      ruleReference: "ABA Model Rule 1.7 — Conflict of Interest; ABA Model Rule 1.9",
+      remediation:
+        "Implement a mandatory conflicts clearance step before activating any new matter. Require attorney sign-off and maintain an auditable conflicts log.",
+    },
+    {
+      id: "legal-002",
+      module: "ethics",
+      severity: "medium",
+      title: "AI rendering jurisdiction-specific legal conclusions",
+      description:
+        "The system prompt instructs the model to provide jurisdiction-specific legal analysis and recommend courses of action without attorney oversight. This creates unauthorized practice of law exposure depending on deployment context.",
+      file: "src/app/api/chat/route.ts",
+      ruleReference: "ABA Model Rule 5.5 — Unauthorized Practice of Law",
+      remediation:
+        "Constrain AI outputs to factual summarization and issue-spotting. Add a system prompt prohibition on legal conclusions. Require attorney review for any actionable recommendation.",
+    },
+  ],
+};
 
 export default function Home() {
   const [repoUrl, setRepoUrl]         = useState("");
@@ -154,13 +309,17 @@ export default function Home() {
 
               <div className="flex items-center justify-center gap-5">
                 <button
-                  onClick={() => setRepoUrl(DEMO)}
-                  className="text-[12px] font-mono transition-colors"
+                  onClick={() => {
+                    setRepoUrl(SAMPLE_REPO);
+                    setReport(SAMPLE_REPORT);
+                    setAppState("done");
+                  }}
+                  className="text-[12px] transition-colors"
                   style={{ color: "var(--t4)" }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t3)")}
                   onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t4)")}
                 >
-                  Try demo repo
+                  View sample report
                 </button>
                 <span style={{ color: "var(--t4)", fontSize: "11px" }}>·</span>
                 <Link
