@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { AppShell } from "@/components/AppShell";
 import { ProgressPanel } from "@/components/ProgressPanel";
 import { ReportView } from "@/components/ReportView";
 import type { AuditReport, ProgressEvent, ProgressStage } from "@/lib/types";
@@ -10,12 +11,12 @@ type AppState = "idle" | "running" | "done" | "error";
 const DEMO = "https://github.com/franzliszt2/vulnerable-legaltech-demo";
 
 export default function Home() {
-  const [repoUrl, setRepoUrl]           = useState("");
-  const [appState, setAppState]         = useState<AppState>("idle");
-  const [currentStage, setStage]        = useState<ProgressStage>("fetch");
-  const [progressMsg, setProgressMsg]   = useState("");
-  const [report, setReport]             = useState<AuditReport | null>(null);
-  const [errorMsg, setErrorMsg]         = useState("");
+  const [repoUrl, setRepoUrl]         = useState("");
+  const [appState, setAppState]       = useState<AppState>("idle");
+  const [currentStage, setStage]      = useState<ProgressStage>("fetch");
+  const [progressMsg, setProgressMsg] = useState("");
+  const [report, setReport]           = useState<AuditReport | null>(null);
+  const [errorMsg, setErrorMsg]       = useState("");
   const abortRef = useRef<AbortController | null>(null);
 
   async function runAudit() {
@@ -77,30 +78,48 @@ export default function Home() {
     setRepoUrl("");
   }
 
+  const shellContext =
+    appState === "running" || appState === "done" ? repoUrl.trim() : undefined;
+
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="flex flex-col items-center justify-center min-h-screen px-5 py-16">
+    <AppShell context={shellContext}>
+      <div
+        className="flex flex-col items-center justify-center px-5 py-16"
+        style={{ minHeight: "calc(100vh - 52px)" }}
+      >
 
         {/* ── IDLE ── */}
         {appState === "idle" && (
-          <div className="w-full max-w-[520px] space-y-12">
-            {/* Wordmark */}
-            <div className="text-center">
-              <p className="text-[11px] text-white/22 tracking-[0.18em] uppercase">
-                LegalTech Auditor
-              </p>
-            </div>
+          <div className="w-full max-w-[520px] space-y-10">
 
-            {/* Hero */}
-            <div className="text-center space-y-3">
+            {/* Wordmark hero */}
+            <div className="text-center space-y-5">
               <h1
-                className="font-bold leading-[1.06] tracking-[-0.04em] text-white"
-                style={{ fontSize: "clamp(38px, 8vw, 54px)" }}
+                className="leading-none"
+                style={{
+                  fontFamily: '"Rhymes Display", Georgia, serif',
+                  fontStyle: "normal",
+                  fontWeight: 300,
+                  fontSize: "clamp(74px, 15vw, 110px)",
+                  letterSpacing: "0.01em",
+                  color: "var(--t1)",
+                }}
               >
-                Audit any<br />legal app.
+                Specter
               </h1>
-              <p className="text-[15px] text-white/40 leading-relaxed tracking-[-0.01em]">
-                Security, ethics, and AI risk — grounded in OWASP,<br className="hidden sm:block" /> MITRE ATLAS, and ABA Formal Opinion 512.
+
+              {/* Thin rule */}
+              <div
+                className="w-10 mx-auto"
+                style={{ height: "0.5px", background: "var(--border-strong)" }}
+              />
+
+              <p
+                className="text-[15px] leading-relaxed tracking-[-0.01em]"
+                style={{ color: "var(--t3)" }}
+              >
+                Security, ethics, and AI risk — grounded in OWASP,
+                <br className="hidden sm:block" /> MITRE ATLAS, and ABA Formal Opinion 512.
               </p>
             </div>
 
@@ -109,8 +128,8 @@ export default function Home() {
               <div
                 className="flex items-center rounded-[14px] overflow-hidden"
                 style={{
-                  background: "rgba(255,255,255,0.06)",
-                  border: "0.5px solid rgba(255,255,255,0.10)",
+                  background: "var(--surface-1)",
+                  border: "0.5px solid var(--border)",
                 }}
               >
                 <input
@@ -119,12 +138,14 @@ export default function Home() {
                   onChange={(e) => setRepoUrl(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && runAudit()}
                   placeholder="github.com/owner/repo"
-                  className="flex-1 bg-transparent px-4 py-3.5 text-[14px] text-white placeholder-white/20 font-mono focus:outline-none tracking-[-0.01em]"
+                  className="flex-1 bg-transparent px-4 py-3.5 text-[14px] font-mono focus:outline-none tracking-[-0.01em]"
+                  style={{ color: "var(--t1)" }}
                 />
                 <button
                   onClick={runAudit}
                   disabled={!repoUrl.trim()}
-                  className="px-5 py-3.5 text-[14px] font-semibold text-black bg-white hover:bg-white/90 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity mr-1 rounded-[10px] tracking-[-0.01em]"
+                  className="px-5 py-3.5 text-[14px] font-semibold transition-opacity mr-1 rounded-[10px] tracking-[-0.01em] disabled:opacity-25 disabled:cursor-not-allowed"
+                  style={{ background: "var(--t1)", color: "var(--bg)" }}
                 >
                   Audit
                 </button>
@@ -133,7 +154,10 @@ export default function Home() {
               <div className="text-center">
                 <button
                   onClick={() => setRepoUrl(DEMO)}
-                  className="text-[12px] text-white/22 hover:text-white/45 transition-colors font-mono"
+                  className="text-[12px] font-mono transition-colors"
+                  style={{ color: "var(--t4)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t3)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t4)")}
                 >
                   Try demo repo
                 </button>
@@ -145,14 +169,20 @@ export default function Home() {
         {/* ── RUNNING ── */}
         {appState === "running" && (
           <div className="w-full max-w-[300px] space-y-10">
-            <p className="text-[11px] text-white/22 tracking-[0.18em] uppercase text-center">
+            <p
+              className="text-[11px] tracking-[0.18em] uppercase text-center"
+              style={{ color: "var(--t4)" }}
+            >
               Analyzing
             </p>
             <ProgressPanel currentStage={currentStage} message={progressMsg} />
             <div className="text-center">
               <button
                 onClick={reset}
-                className="text-[12px] text-white/20 hover:text-white/45 transition-colors"
+                className="text-[12px] transition-colors"
+                style={{ color: "var(--t4)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t3)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t4)")}
               >
                 Cancel
               </button>
@@ -163,15 +193,24 @@ export default function Home() {
         {/* ── ERROR ── */}
         {appState === "error" && (
           <div className="w-full max-w-[520px] text-center space-y-4">
-            <p className="text-[15px] text-[#FF453A] font-medium tracking-[-0.01em]">
+            <p
+              className="text-[15px] font-medium tracking-[-0.01em]"
+              style={{ color: "var(--ios-red)" }}
+            >
               Audit failed
             </p>
-            <p className="text-[13px] text-white/30 font-mono leading-relaxed">
+            <p
+              className="text-[13px] font-mono leading-relaxed"
+              style={{ color: "var(--t3)" }}
+            >
               {errorMsg}
             </p>
             <button
               onClick={reset}
-              className="text-[13px] text-white/40 hover:text-white/70 transition-colors"
+              className="text-[13px] transition-colors"
+              style={{ color: "var(--t3)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t2)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t3)")}
             >
               Try again
             </button>
@@ -185,7 +224,10 @@ export default function Home() {
             <div className="text-center pt-8 pb-2">
               <button
                 onClick={reset}
-                className="text-[12px] text-white/18 hover:text-white/40 transition-colors"
+                className="text-[12px] transition-colors"
+                style={{ color: "var(--t4)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t3)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t4)")}
               >
                 New audit
               </button>
@@ -194,6 +236,6 @@ export default function Home() {
         )}
 
       </div>
-    </div>
+    </AppShell>
   );
 }

@@ -19,11 +19,41 @@ function formatFiles(
     .join("\n\n");
 }
 
+function recoverPartialArray(text: string): unknown[] {
+  const results: unknown[] = [];
+  let depth = 0, inString = false, escape = false, start = -1;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (escape)              { escape = false; continue; }
+    if (c === "\\" && inString) { escape = true; continue; }
+    if (c === '"')           { inString = !inString; continue; }
+    if (inString)            continue;
+    if (c === "{") { if (depth++ === 0) start = i; }
+    else if (c === "}") {
+      if (--depth === 0 && start !== -1) {
+        try { results.push(JSON.parse(text.slice(start, i + 1))); } catch { /* skip malformed */ }
+        start = -1;
+      }
+    }
+  }
+  return results;
+}
+
 function extractJson<T>(text: string): T {
-  const match = text.match(/```(?:json)?\s*([\s\S]+?)```/) ??
-    text.match(/(\{[\s\S]+\}|\[[\s\S]+\])/);
-  if (!match) throw new Error("No JSON found in model response");
-  return JSON.parse(match[1].trim()) as T;
+  const blockMatch = text.match(/```(?:json)?\s*([\s\S]+?)```/);
+  const raw = blockMatch
+    ? blockMatch[1].trim()
+    : (text.match(/(\{[\s\S]+\}|\[[\s\S]+\])/) ?? [])[1];
+  if (!raw) throw new Error("No JSON found in model response");
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    if (raw.trimStart().startsWith("[")) {
+      const recovered = recoverPartialArray(raw);
+      if (recovered.length > 0) return recovered as T;
+    }
+    throw new Error(`JSON parse error — response may have been truncated`);
+  }
 }
 
 function scoreFindings(findings: Finding[]): OverallScore {
@@ -113,7 +143,7 @@ export async function runSecurityAudit(
 
   const response = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: 8192,
     system: [
       {
         type: "text",
@@ -172,7 +202,7 @@ export async function runEthicsAudit(
 
   const response = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: 8192,
     system: [
       {
         type: "text",

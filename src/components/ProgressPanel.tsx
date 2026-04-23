@@ -1,4 +1,3 @@
-import { cn } from "@/lib/cn";
 import type { ProgressStage } from "@/lib/types";
 
 const STAGES: { id: ProgressStage; label: string }[] = [
@@ -18,39 +17,74 @@ export function ProgressPanel({ currentStage }: { currentStage: ProgressStage; m
   const current = ORDER.indexOf(currentStage);
 
   return (
-    <div className="space-y-1">
-      {STAGES.map((s, i) => {
-        const idx = ORDER.indexOf(s.id);
+    <div className="space-y-0.5">
+      {STAGES.map((s) => {
+        const idx    = ORDER.indexOf(s.id);
         const done   = current > idx;
         const active = current === idx;
 
         return (
-          <div
-            key={s.id}
-            className={cn(
-              "flex items-center gap-3 px-1 py-2 transition-all duration-200",
-            )}
-          >
+          <div key={s.id} className="flex items-center gap-3 px-1 py-[9px]">
             {/* State indicator */}
-            <div className="w-[18px] flex items-center justify-center flex-shrink-0">
+            <div className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0">
               {done ? (
+                /* Completed checkmark */
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <circle cx="7" cy="7" r="6.5" fill="#32D74B" fillOpacity="0.15" stroke="#32D74B" strokeWidth="0.75"/>
-                  <path d="M4.5 7L6.5 9L9.5 5.5" stroke="#32D74B" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle
+                    cx="7" cy="7" r="6.5"
+                    fill="rgba(52,199,89,0.12)"
+                    stroke="var(--ios-green)"
+                    strokeWidth="0.75"
+                  />
+                  <path
+                    d="M4.5 7L6.5 9L9.5 5.5"
+                    stroke="var(--ios-green)"
+                    strokeWidth="1.25"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               ) : active ? (
-                <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
+                /* Animated spinner for active step */
+                <svg
+                  className="spin-progress"
+                  width="14" height="14" viewBox="0 0 14 14" fill="none"
+                >
+                  {/* Track */}
+                  <circle
+                    cx="7" cy="7" r="5.5"
+                    stroke="var(--sep)"
+                    strokeWidth="1.25"
+                  />
+                  {/* Arc */}
+                  <path
+                    d="M7 1.5A5.5 5.5 0 0 1 12.5 7"
+                    stroke="var(--t2)"
+                    strokeWidth="1.25"
+                    strokeLinecap="round"
+                  />
+                </svg>
               ) : (
-                <div className="w-1.5 h-1.5 rounded-full bg-white/12" />
+                /* Pending dot */
+                <div
+                  className="w-[5px] h-[5px] rounded-full"
+                  style={{ background: "var(--sep)" }}
+                />
               )}
             </div>
 
-            <span className={cn(
-              "text-[14px] tracking-[-0.01em] transition-all duration-200",
-              done   ? "text-white/28 line-through decoration-white/15" :
-              active ? "text-white/90 font-medium" :
-                       "text-white/22"
-            )}>
+            <span
+              className="text-[14px] tracking-[-0.01em] transition-all duration-200"
+              style={{
+                color: done
+                  ? "var(--t4)"
+                  : active
+                  ? "var(--t1)"
+                  : "var(--t3)",
+                textDecoration: done ? "line-through" : "none",
+                fontWeight: active ? 500 : 400,
+              }}
+            >
               {s.label}
             </span>
           </div>

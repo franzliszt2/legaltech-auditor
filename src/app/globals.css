@@ -1,28 +1,84 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #000000;
-  --surface-1: rgba(255, 255, 255, 0.055);
-  --surface-2: rgba(255, 255, 255, 0.03);
-  --border: rgba(255, 255, 255, 0.09);
-  --border-strong: rgba(255, 255, 255, 0.14);
+  /* Light theme (default) */
+  --bg:            #F2F2F7;
+  --surface-1:     rgba(255, 255, 255, 0.85);
+  --surface-2:     rgba(255, 255, 255, 0.55);
+  --border:        rgba(0, 0, 0, 0.09);
+  --border-strong: rgba(0, 0, 0, 0.16);
 
-  --text-primary: rgba(255, 255, 255, 0.95);
-  --text-secondary: rgba(255, 255, 255, 0.50);
-  --text-tertiary: rgba(255, 255, 255, 0.28);
+  --shell-bg:     rgba(242, 242, 247, 0.92);
+  --shell-border: rgba(0, 0, 0, 0.09);
 
-  /* iOS system colors */
-  --ios-red: #FF453A;
+  /* Stronger text values for legibility */
+  --t1: rgba(0, 0, 0, 0.90);
+  --t2: rgba(0, 0, 0, 0.64);
+  --t3: rgba(0, 0, 0, 0.48);
+  --t4: rgba(0, 0, 0, 0.34);
+
+  --tab-bg:       rgba(0, 0, 0, 0.05);
+  --tab-selected: rgba(0, 0, 0, 0.10);
+  --tab-border:   rgba(0, 0, 0, 0.07);
+
+  --hover-bg:  rgba(0, 0, 0, 0.025);
+  --active-bg: rgba(0, 0, 0, 0.05);
+  --sep:       rgba(0, 0, 0, 0.08);
+
+  /* iOS system colors — light */
+  --ios-red:    #FF3B30;
+  --ios-orange: #FF9500;
+  --ios-yellow: #CC9900;
+  --ios-green:  #34C759;
+  --ios-blue:   #007AFF;
+  --ios-gray:   #6E6E73;
+}
+
+[data-theme="dark"] {
+  --bg:            #000000;
+  --surface-1:     rgba(255, 255, 255, 0.055);
+  --surface-2:     rgba(255, 255, 255, 0.03);
+  --border:        rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --shell-bg:     rgba(0, 0, 0, 0.88);
+  --shell-border: rgba(255, 255, 255, 0.09);
+
+  --t1: rgba(255, 255, 255, 0.96);
+  --t2: rgba(255, 255, 255, 0.70);
+  --t3: rgba(255, 255, 255, 0.48);
+  --t4: rgba(255, 255, 255, 0.32);
+
+  --tab-bg:       rgba(255, 255, 255, 0.08);
+  --tab-selected: rgba(255, 255, 255, 0.15);
+  --tab-border:   rgba(255, 255, 255, 0.09);
+
+  --hover-bg:  rgba(255, 255, 255, 0.035);
+  --active-bg: rgba(255, 255, 255, 0.06);
+  --sep:       rgba(255, 255, 255, 0.08);
+
+  /* iOS system colors — dark */
+  --ios-red:    #FF453A;
   --ios-orange: #FF9F0A;
   --ios-yellow: #FFD60A;
-  --ios-green: #32D74B;
-  --ios-blue: #0A84FF;
-  --ios-gray: #636366;
+  --ios-green:  #32D74B;
+  --ios-blue:   #0A84FF;
+  --ios-gray:   #8E8E93;
 }
 
 @theme inline {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   --font-mono: "SF Mono", ui-monospace, "Cascadia Code", monospace;
+}
+
+@keyframes spin-progress {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spin-progress {
+  animation: spin-progress 0.85s linear infinite;
+  transform-origin: center;
 }
 
 * {
@@ -30,19 +86,15 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-body {
+html {
   background: var(--bg);
-  color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
 }
 
-/* Hairline separator utility */
-.sep::before {
-  content: '';
-  display: block;
-  height: 1px;
-  background: var(--border);
-  margin-left: 0;
+body {
+  background: var(--bg);
+  color: var(--t1);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 /* iOS-style list group */
@@ -50,7 +102,7 @@ body {
   border-radius: 14px;
   overflow: hidden;
   background: var(--surface-1);
-  border: 1px solid var(--border);
+  border: 0.5px solid var(--border);
 }
 
 .list-row {
@@ -70,9 +122,9 @@ body {
   left: 18px;
   right: 0;
   height: 0.5px;
-  background: var(--border);
+  background: var(--sep);
 }
 
 .list-row:active {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--active-bg);
 }
