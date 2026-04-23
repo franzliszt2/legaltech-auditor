@@ -118,8 +118,8 @@ export default function Home() {
                 className="text-[15px] leading-relaxed tracking-[-0.01em]"
                 style={{ color: "var(--t3)" }}
               >
-                Security, ethics, and AI risk — grounded in OWASP,
-                <br className="hidden sm:block" /> MITRE ATLAS, and ABA Formal Opinion 512.
+                Proprietary legal auditing engine. Trusted security,
+                <br className="hidden sm:block" /> ethics, and AI risk analysis against OWASP, MITRE ATLAS, and ABA standards.
               </p>
             </div>
 
