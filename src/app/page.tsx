@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { ProgressPanel } from "@/components/ProgressPanel";
 import { ReportView } from "@/components/ReportView";
@@ -151,7 +152,7 @@ export default function Home() {
                 </button>
               </div>
 
-              <div className="text-center">
+              <div className="flex items-center justify-center gap-5">
                 <button
                   onClick={() => setRepoUrl(DEMO)}
                   className="text-[12px] font-mono transition-colors"
@@ -161,6 +162,16 @@ export default function Home() {
                 >
                   Try demo repo
                 </button>
+                <span style={{ color: "var(--t4)", fontSize: "11px" }}>·</span>
+                <Link
+                  href="/demo"
+                  className="text-[12px] transition-colors"
+                  style={{ color: "var(--t4)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t3)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t4)")}
+                >
+                  About Specter
+                </Link>
               </div>
             </div>
           </div>
