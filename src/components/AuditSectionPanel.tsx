@@ -1,34 +1,37 @@
 import { FindingRow } from "./FindingRow";
 import type { SectionGroup } from "@/lib/sections";
 
-interface Props {
-  group: SectionGroup;
-}
-
-export function AuditSectionPanel({ group }: Props) {
+export function AuditSectionPanel({ group }: { group: SectionGroup }) {
   const { section, findings, topSeverity } = group;
   const summary = section.summaryTemplate(findings.length, topSeverity);
 
   if (findings.length === 0) {
     return (
-      <div className="w-full max-w-2xl mx-auto rounded-2xl border border-white/8 bg-white/2 px-6 py-10 text-center">
-        <p className="text-sm text-white/25">{summary}</p>
+      <div className="py-10 text-center">
+        <p className="text-[14px] text-white/22">{summary}</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-4">
-      {/* Section header */}
-      <div className="px-1">
-        <h2 className="text-lg font-semibold text-white mb-1">{section.label}</h2>
-        <p className="text-sm text-white/45 leading-relaxed">{summary}</p>
+    <div className="space-y-3">
+      {/* Section intro */}
+      <div className="px-1 pb-1">
+        <p className="text-[13px] text-white/38 leading-relaxed tracking-[-0.01em]">
+          {summary}
+        </p>
       </div>
 
-      {/* Finding rows */}
-      <div className="space-y-2">
-        {findings.map((f) => (
-          <FindingRow key={f.id} finding={f} />
+      {/* Findings list — iOS grouped list style */}
+      <div
+        className="rounded-[14px] overflow-hidden"
+        style={{
+          background: "rgba(255,255,255,0.05)",
+          border: "0.5px solid rgba(255,255,255,0.09)",
+        }}
+      >
+        {findings.map((f, i) => (
+          <FindingRow key={f.id} finding={f} last={i === findings.length - 1} />
         ))}
       </div>
     </div>

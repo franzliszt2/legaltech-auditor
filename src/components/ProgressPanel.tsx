@@ -10,85 +10,52 @@ const STAGES: { id: ProgressStage; label: string }[] = [
   { id: "assembly", label: "Assembling report" },
 ];
 
-const STAGE_ORDER: ProgressStage[] = [
+const ORDER: ProgressStage[] = [
   "fetch", "triage", "security", "ethics", "ai-risk", "assembly", "complete",
 ];
 
-function stageIndex(stage: ProgressStage) {
-  return STAGE_ORDER.indexOf(stage);
-}
-
-interface Props {
-  currentStage: ProgressStage;
-  message: string;
-}
-
-export function ProgressPanel({ currentStage, message }: Props) {
-  const currentIndex = stageIndex(currentStage);
-  const isError = currentStage === "error";
+export function ProgressPanel({ currentStage }: { currentStage: ProgressStage; message: string }) {
+  const current = ORDER.indexOf(currentStage);
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <div className="rounded-2xl border border-white/10 bg-white/3 p-6 backdrop-blur">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="relative flex h-3 w-3">
-            {!isError && (
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
+    <div className="space-y-1">
+      {STAGES.map((s, i) => {
+        const idx = ORDER.indexOf(s.id);
+        const done   = current > idx;
+        const active = current === idx;
+
+        return (
+          <div
+            key={s.id}
+            className={cn(
+              "flex items-center gap-3 px-1 py-2 transition-all duration-200",
             )}
-            <span
-              className={cn(
-                "relative inline-flex rounded-full h-3 w-3",
-                isError ? "bg-red-500" : "bg-violet-500"
+          >
+            {/* State indicator */}
+            <div className="w-[18px] flex items-center justify-center flex-shrink-0">
+              {done ? (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <circle cx="7" cy="7" r="6.5" fill="#32D74B" fillOpacity="0.15" stroke="#32D74B" strokeWidth="0.75"/>
+                  <path d="M4.5 7L6.5 9L9.5 5.5" stroke="#32D74B" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              ) : active ? (
+                <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
+              ) : (
+                <div className="w-1.5 h-1.5 rounded-full bg-white/12" />
               )}
-            />
+            </div>
+
+            <span className={cn(
+              "text-[14px] tracking-[-0.01em] transition-all duration-200",
+              done   ? "text-white/28 line-through decoration-white/15" :
+              active ? "text-white/90 font-medium" :
+                       "text-white/22"
+            )}>
+              {s.label}
+            </span>
           </div>
-          <p className="text-sm text-white/70 font-mono">{message}</p>
-        </div>
-
-        <div className="space-y-3">
-          {STAGES.map((s) => {
-            const idx = stageIndex(s.id);
-            const done = currentIndex > idx;
-            const active = currentIndex === idx;
-
-            return (
-              <div key={s.id} className="flex items-center gap-3">
-                <div
-                  className={cn(
-                    "w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all",
-                    done
-                      ? "bg-emerald-500 border-emerald-500"
-                      : active
-                      ? "border-violet-500 bg-violet-500/20"
-                      : "border-white/15 bg-transparent"
-                  )}
-                >
-                  {done && (
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  )}
-                  {active && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-                  )}
-                </div>
-                <span
-                  className={cn(
-                    "text-sm transition-colors",
-                    done ? "text-white/50" : active ? "text-white font-medium" : "text-white/25"
-                  )}
-                >
-                  {s.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 }

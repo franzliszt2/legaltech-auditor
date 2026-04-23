@@ -1,55 +1,84 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/cn";
-import { SeverityBadge } from "./SeverityBadge";
-import type { Finding } from "@/lib/types";
+import type { Finding, Severity } from "@/lib/types";
 
-export function FindingRow({ finding }: { finding: Finding }) {
+const SEV_DOT: Record<Severity, string> = {
+  critical: "#FF453A",
+  high:     "#FF9F0A",
+  medium:   "#FFD60A",
+  low:      "#32D74B",
+  info:     "#636366",
+};
+
+export function FindingRow({ finding, last = false }: { finding: Finding; last?: boolean }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className={cn(
-      "rounded-xl border transition-all duration-150",
-      open ? "border-white/15 bg-white/4" : "border-white/8 bg-white/2 hover:border-white/12"
-    )}>
-      {/* Collapsed row */}
+    <div>
+      {/* Row */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-start gap-4 px-5 py-4 text-left"
+        className="w-full text-left px-[18px] py-[13px] flex items-start gap-3 hover:bg-white/[0.03] active:bg-white/[0.05] transition-colors"
       >
-        <div className="flex-shrink-0 pt-0.5">
-          <SeverityBadge severity={finding.severity} size="xs" />
-        </div>
+        {/* Severity dot */}
+        <span
+          className="w-2 h-2 rounded-full flex-shrink-0 mt-[3px]"
+          style={{ background: SEV_DOT[finding.severity] }}
+        />
+
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-white leading-snug">{finding.title}</p>
+          <p className="text-[14px] text-white/90 leading-snug tracking-[-0.01em]">
+            {finding.title}
+          </p>
           {finding.file && (
-            <p className="text-xs font-mono text-white/30 mt-0.5 truncate">{finding.file}</p>
+            <p className="text-[11px] font-mono text-white/28 mt-0.5 truncate">
+              {finding.file}
+            </p>
           )}
         </div>
-        <span className={cn(
-          "flex-shrink-0 text-xs font-mono text-white/30 mt-0.5 transition-transform duration-150",
-          open ? "rotate-180" : ""
-        )}>
-          ▾
-        </span>
+
+        {/* Chevron */}
+        <svg
+          className="flex-shrink-0 mt-0.5 transition-transform duration-200 text-white/20"
+          style={{ transform: open ? "rotate(90deg)" : "rotate(0deg)" }}
+          width="7" height="12" viewBox="0 0 7 12" fill="none"
+        >
+          <path d="M1 1L6 6L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
       </button>
 
-      {/* Expanded drawer */}
+      {/* Separator */}
+      {!open && !last && (
+        <div className="h-[0.5px] bg-white/[0.07] ml-[42px]" />
+      )}
+
+      {/* Expanded content */}
       {open && (
-        <div className="px-5 pb-5 border-t border-white/8 pt-4 space-y-4">
-          <p className="text-sm text-white/70 leading-relaxed">{finding.description}</p>
+        <div
+          className="px-[42px] pb-4 pt-2 space-y-3"
+          style={{ borderBottom: last ? "none" : "0.5px solid rgba(255,255,255,0.07)" }}
+        >
+          <p className="text-[13px] text-white/55 leading-relaxed tracking-[-0.01em]">
+            {finding.description}
+          </p>
 
           {finding.ruleReference && (
-            <div className="flex items-start gap-2">
-              <span className="text-xs text-white/30 font-mono uppercase tracking-wider pt-0.5 flex-shrink-0">Ref</span>
-              <span className="text-xs font-mono text-white/50">{finding.ruleReference}</span>
-            </div>
+            <p className="text-[11px] font-mono text-white/28">
+              {finding.ruleReference}
+            </p>
           )}
 
-          <div className="rounded-lg bg-white/4 border border-white/8 px-4 py-3">
-            <p className="text-[11px] font-semibold text-white/30 uppercase tracking-widest mb-1.5">Remediation</p>
-            <p className="text-sm text-white/75 leading-relaxed">{finding.remediation}</p>
+          <div
+            className="rounded-[10px] px-4 py-3"
+            style={{ background: "rgba(255,255,255,0.04)", border: "0.5px solid rgba(255,255,255,0.07)" }}
+          >
+            <p className="text-[10px] text-white/25 uppercase tracking-[0.1em] font-medium mb-1.5">
+              Remediation
+            </p>
+            <p className="text-[13px] text-white/65 leading-relaxed tracking-[-0.01em]">
+              {finding.remediation}
+            </p>
           </div>
         </div>
       )}

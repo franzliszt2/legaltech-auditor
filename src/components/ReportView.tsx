@@ -11,21 +11,13 @@ import { AuditSectionPanel } from "./AuditSectionPanel";
 export function ReportView({ report }: { report: AuditReport }) {
   const groups = groupBySection(report.findings);
   const [activeId, setActiveId] = useState<SectionId>(() => defaultSection(groups));
-
   const activeGroup = groups.find((g) => g.section.id === activeId)!;
 
   return (
-    <div className="w-full space-y-10">
-      {/* 1 — Hero */}
+    <div className="space-y-8">
       <AuditHero score={report.overallScore} />
-
-      {/* 2 — Snapshot card */}
       <AuditSnapshotCard report={report} />
-
-      {/* 3 — Section navigator */}
       <AuditSectionTabs groups={groups} active={activeId} onChange={setActiveId} />
-
-      {/* 4 — Active section panel */}
       <AuditSectionPanel group={activeGroup} />
     </div>
   );

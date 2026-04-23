@@ -7,17 +7,15 @@ import type { AuditReport, ProgressEvent, ProgressStage } from "@/lib/types";
 
 type AppState = "idle" | "running" | "done" | "error";
 
-const DEMO_REPOS = [
-  "https://github.com/franzliszt2/vulnerable-legaltech-demo",
-];
+const DEMO = "https://github.com/franzliszt2/vulnerable-legaltech-demo";
 
 export default function Home() {
-  const [repoUrl, setRepoUrl]               = useState("");
-  const [appState, setAppState]             = useState<AppState>("idle");
-  const [currentStage, setCurrentStage]     = useState<ProgressStage>("fetch");
-  const [progressMessage, setProgressMessage] = useState("");
-  const [report, setReport]                 = useState<AuditReport | null>(null);
-  const [errorMsg, setErrorMsg]             = useState("");
+  const [repoUrl, setRepoUrl]           = useState("");
+  const [appState, setAppState]         = useState<AppState>("idle");
+  const [currentStage, setStage]        = useState<ProgressStage>("fetch");
+  const [progressMsg, setProgressMsg]   = useState("");
+  const [report, setReport]             = useState<AuditReport | null>(null);
+  const [errorMsg, setErrorMsg]         = useState("");
   const abortRef = useRef<AbortController | null>(null);
 
   async function runAudit() {
@@ -25,9 +23,8 @@ export default function Home() {
     setAppState("running");
     setReport(null);
     setErrorMsg("");
-    setCurrentStage("fetch");
-    setProgressMessage("Starting audit…");
-
+    setStage("fetch");
+    setProgressMsg("");
     abortRef.current = new AbortController();
 
     try {
@@ -50,13 +47,11 @@ export default function Home() {
         buffer += decoder.decode(value, { stream: true });
         const parts = buffer.split("\n\n");
         buffer = parts.pop() ?? "";
-
         for (const part of parts) {
           if (!part.startsWith("data:")) continue;
-          const json = part.replace(/^data:\s*/, "");
-          const event: ProgressEvent = JSON.parse(json);
-          setCurrentStage(event.stage);
-          setProgressMessage(event.message);
+          const event: ProgressEvent = JSON.parse(part.replace(/^data:\s*/, ""));
+          setStage(event.stage);
+          setProgressMsg(event.message);
           if (event.stage === "complete" && event.report) {
             setReport(event.report);
             setAppState("done");
@@ -79,95 +74,86 @@ export default function Home() {
     setAppState("idle");
     setReport(null);
     setErrorMsg("");
+    setRepoUrl("");
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
-      {/* Ambient glow */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-violet-900/20 blur-[120px]" />
-        <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full bg-indigo-900/15 blur-[120px]" />
-      </div>
-
-      <div className="relative z-10 flex flex-col items-center px-4 py-16">
-        {/* Header */}
-        <div className="text-center mb-12 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-400 text-xs font-mono mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-            Legal Tech Security Auditor
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-br from-white via-white/90 to-white/50 bg-clip-text text-transparent">
-            Is your legal app<br />safe to ship?
-          </h1>
-          <p className="text-white/50 text-lg leading-relaxed">
-            Paste a GitHub repo URL. We audit it for security vulnerabilities,
-            ABA ethics compliance, and AI-specific legal risks — grounded in
-            OWASP, MITRE ATLAS, and ABA Formal Opinion 512.
-          </p>
-        </div>
+    <div className="min-h-screen bg-black text-white">
+      <div className="flex flex-col items-center justify-center min-h-screen px-5 py-16">
 
         {/* ── IDLE ── */}
         {appState === "idle" && (
-          <div className="w-full max-w-2xl">
-            <div className="rounded-2xl border border-white/10 bg-white/3 p-6 backdrop-blur">
-              <label className="block text-xs text-white/40 font-mono uppercase tracking-widest mb-3">
-                GitHub Repository URL
-              </label>
-              <div className="flex gap-3">
+          <div className="w-full max-w-[520px] space-y-12">
+            {/* Wordmark */}
+            <div className="text-center">
+              <p className="text-[11px] text-white/22 tracking-[0.18em] uppercase">
+                LegalTech Auditor
+              </p>
+            </div>
+
+            {/* Hero */}
+            <div className="text-center space-y-3">
+              <h1
+                className="font-bold leading-[1.06] tracking-[-0.04em] text-white"
+                style={{ fontSize: "clamp(38px, 8vw, 54px)" }}
+              >
+                Audit any<br />legal app.
+              </h1>
+              <p className="text-[15px] text-white/40 leading-relaxed tracking-[-0.01em]">
+                Security, ethics, and AI risk — grounded in OWASP,<br className="hidden sm:block" /> MITRE ATLAS, and ABA Formal Opinion 512.
+              </p>
+            </div>
+
+            {/* Input */}
+            <div className="space-y-3">
+              <div
+                className="flex items-center rounded-[14px] overflow-hidden"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  border: "0.5px solid rgba(255,255,255,0.10)",
+                }}
+              >
                 <input
                   type="url"
                   value={repoUrl}
                   onChange={(e) => setRepoUrl(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && runAudit()}
-                  placeholder="https://github.com/example/legal-ai-app"
-                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 font-mono focus:outline-none focus:border-violet-500/60 focus:bg-white/8 transition-all"
+                  placeholder="github.com/owner/repo"
+                  className="flex-1 bg-transparent px-4 py-3.5 text-[14px] text-white placeholder-white/20 font-mono focus:outline-none tracking-[-0.01em]"
                 />
                 <button
                   onClick={runAudit}
                   disabled={!repoUrl.trim()}
-                  className="px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-semibold transition-colors whitespace-nowrap"
+                  className="px-5 py-3.5 text-[14px] font-semibold text-black bg-white hover:bg-white/90 disabled:opacity-25 disabled:cursor-not-allowed transition-opacity mr-1 rounded-[10px] tracking-[-0.01em]"
                 >
-                  Run Audit
+                  Audit
                 </button>
               </div>
-              <div className="mt-4">
-                <p className="text-xs text-white/30 mb-2">Try a demo repo:</p>
-                <div className="flex flex-wrap gap-2">
-                  {DEMO_REPOS.map((url) => (
-                    <button
-                      key={url}
-                      onClick={() => setRepoUrl(url)}
-                      className="text-xs font-mono text-violet-400/70 hover:text-violet-400 underline underline-offset-2 transition-colors"
-                    >
-                      {url.replace("https://github.com/", "")}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
 
-            <div className="mt-6 grid grid-cols-3 gap-3 text-center">
-              {[
-                { emoji: "🔒", label: "Security",    desc: "OWASP Top 10 + LLM risks" },
-                { emoji: "⚖️", label: "Legal Ethics", desc: "ABA Rules + Opinion 512" },
-                { emoji: "🤖", label: "AI Risk",      desc: "MITRE ATLAS + prompt injection" },
-              ].map(({ emoji, label, desc }) => (
-                <div key={label} className="rounded-xl border border-white/8 bg-white/2 px-4 py-4">
-                  <div className="text-xl mb-1">{emoji}</div>
-                  <div className="text-xs font-semibold text-white/80 mb-0.5">{label}</div>
-                  <div className="text-xs text-white/35">{desc}</div>
-                </div>
-              ))}
+              <div className="text-center">
+                <button
+                  onClick={() => setRepoUrl(DEMO)}
+                  className="text-[12px] text-white/22 hover:text-white/45 transition-colors font-mono"
+                >
+                  Try demo repo
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {/* ── RUNNING ── */}
         {appState === "running" && (
-          <div className="w-full max-w-2xl space-y-4">
-            <ProgressPanel currentStage={currentStage} message={progressMessage} />
+          <div className="w-full max-w-[300px] space-y-10">
+            <p className="text-[11px] text-white/22 tracking-[0.18em] uppercase text-center">
+              Analyzing
+            </p>
+            <ProgressPanel currentStage={currentStage} message={progressMsg} />
             <div className="text-center">
-              <button onClick={reset} className="text-xs text-white/30 hover:text-white/60 transition-colors">
+              <button
+                onClick={reset}
+                className="text-[12px] text-white/20 hover:text-white/45 transition-colors"
+              >
                 Cancel
               </button>
             </div>
@@ -176,31 +162,37 @@ export default function Home() {
 
         {/* ── ERROR ── */}
         {appState === "error" && (
-          <div className="w-full max-w-2xl">
-            <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-center">
-              <p className="text-red-400 font-semibold mb-2">Audit failed</p>
-              <p className="text-sm text-white/50 font-mono mb-4">{errorMsg}</p>
-              <button onClick={reset} className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-sm transition-colors">
-                Try again
-              </button>
-            </div>
+          <div className="w-full max-w-[520px] text-center space-y-4">
+            <p className="text-[15px] text-[#FF453A] font-medium tracking-[-0.01em]">
+              Audit failed
+            </p>
+            <p className="text-[13px] text-white/30 font-mono leading-relaxed">
+              {errorMsg}
+            </p>
+            <button
+              onClick={reset}
+              className="text-[13px] text-white/40 hover:text-white/70 transition-colors"
+            >
+              Try again
+            </button>
           </div>
         )}
 
         {/* ── DONE ── */}
         {appState === "done" && report && (
-          <div className="w-full max-w-2xl space-y-10">
+          <div className="w-full max-w-[580px] space-y-2">
             <ReportView report={report} />
-            <div className="text-center pb-8">
+            <div className="text-center pt-8 pb-2">
               <button
                 onClick={reset}
-                className="text-xs text-white/25 hover:text-white/50 transition-colors font-mono tracking-wide"
+                className="text-[12px] text-white/18 hover:text-white/40 transition-colors"
               >
-                ← Run another audit
+                New audit
               </button>
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
