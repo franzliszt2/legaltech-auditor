@@ -189,14 +189,16 @@ export default function Home() {
 
         {/* ── DONE ── */}
         {appState === "done" && report && (
-          <div className="w-full max-w-3xl space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-sm font-mono text-white/40 uppercase tracking-widest">Audit Results</h2>
-              <button onClick={reset} className="text-xs text-white/30 hover:text-white/60 transition-colors font-mono">
-                ← New audit
+          <div className="w-full max-w-2xl space-y-10">
+            <ReportView report={report} />
+            <div className="text-center pb-8">
+              <button
+                onClick={reset}
+                className="text-xs text-white/25 hover:text-white/50 transition-colors font-mono tracking-wide"
+              >
+                ← Run another audit
               </button>
             </div>
-            <ReportView report={report} />
           </div>
         )}
       </div>

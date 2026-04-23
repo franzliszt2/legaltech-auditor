@@ -60,6 +60,11 @@ function isHighSignal(filePath: string): boolean {
   return HIGH_SIGNAL_PATTERNS.some((p) => p.test(filePath));
 }
 
+function sanitize(text: string): string {
+  // Remove unpaired surrogates and other non-JSON-safe characters
+  return text.replace(/[\uD800-\uDFFF]/g, "").replace(/\0/g, "");
+}
+
 export function parseRepoUrl(url: string): { owner: string; repo: string } {
   const match = url.trim().match(/github\.com\/([^/]+)\/([^/\s?#]+)/);
   if (!match) throw new Error(`Invalid GitHub URL: ${url}`);
@@ -68,7 +73,8 @@ export function parseRepoUrl(url: string): { owner: string; repo: string } {
 
 export async function fetchRepo(repoUrl: string): Promise<RepoBundle> {
   const { owner, repo } = parseRepoUrl(repoUrl);
-  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+  const token = process.env.GITHUB_TOKEN;
+  const octokit = new Octokit(token ? { auth: token } : {});
 
   const { data: treeData } = await octokit.git.getTree({
     owner,
@@ -91,7 +97,7 @@ export async function fetchRepo(repoUrl: string): Promise<RepoBundle> {
             path: item.path!,
           });
           if (!("content" in data) || typeof data.content !== "string") return null;
-          const content = Buffer.from(data.content, "base64").toString("utf-8");
+          const content = sanitize(Buffer.from(data.content, "base64").toString("utf-8"));
           if (content.length > MAX_FILE_BYTES) return null;
           return {
             path: item.path!,
