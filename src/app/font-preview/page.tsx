@@ -3,43 +3,40 @@
 import { AppShell } from "@/components/AppShell";
 import Link from "next/link";
 
-const fontOptions = [
-  {
-    id: 1,
-    name: "Orbitron",
-    weight: 700,
-    fontFamily: '"Orbitron", sans-serif',
-    description: "Geometric, futuristic typeface. Sharp angles evoke sci-fi interfaces and digital displays.",
-  },
-  {
-    id: 2,
-    name: "Rajdhani",
-    weight: 700,
-    fontFamily: '"Rajdhani", sans-serif',
-    description: "Technical sans-serif with angular terminals. Compact and machine-like.",
-  },
-  {
-    id: 3,
-    name: "Exo 2",
-    weight: 700,
-    fontFamily: '"Exo 2", sans-serif',
-    description: "Contemporary geometric with subtle tech flourishes. Clean yet distinctly digital.",
-  },
-  {
-    id: 4,
-    name: "Audiowide",
-    weight: 400,
-    fontFamily: '"Audiowide", sans-serif',
-    description: "Wide, bold display face. Inspired by automotive and tech branding.",
-  },
-  {
-    id: 5,
-    name: "Share Tech",
-    weight: 400,
-    fontFamily: '"Share Tech", sans-serif',
-    description: "Utilitarian tech aesthetic. Simple, readable, unmistakably technical.",
-  },
-];
+function SpecterLogo({ size = 120 }: { size?: number }) {
+  const circleRadius = size / 2;
+  const triangleHeight = size * 0.08;
+  const triangleWidth = size * 0.25;
+  const gap = size * 0.04;
+  const totalStackHeight = triangleHeight * 4 + gap * 3;
+  const startY = (size - totalStackHeight) / 2;
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Black circle */}
+      <circle cx={circleRadius} cy={circleRadius} r={circleRadius} fill="black" />
+
+      {/* Four red triangles stacked vertically */}
+      {[0, 1, 2, 3].map((i) => {
+        const y = startY + i * (triangleHeight + gap);
+        const x = size / 2;
+        return (
+          <polygon
+            key={i}
+            points={`${x},${y} ${x + triangleWidth / 2},${y + triangleHeight} ${x - triangleWidth / 2},${y + triangleHeight}`}
+            fill="#EF4444"
+          />
+        );
+      })}
+    </svg>
+  );
+}
 
 export default function FontPreview() {
   return (
@@ -48,7 +45,7 @@ export default function FontPreview() {
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link
-        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@700&family=Exo+2:wght@700&family=Audiowide&family=Share+Tech&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Share+Tech&display=swap"
         rel="stylesheet"
       />
 
@@ -64,116 +61,135 @@ export default function FontPreview() {
                 className="text-[11px] tracking-[0.18em] uppercase"
                 style={{ color: "var(--t4)" }}
               >
-                Technical Typefaces
+                Logo Preview
               </p>
               <h1
                 className="text-[28px] font-semibold tracking-[-0.02em]"
                 style={{ color: "var(--t1)" }}
               >
-                Tech-inspired display fonts
+                Specter Logo Design
               </h1>
               <p className="text-[14px]" style={{ color: "var(--t3)" }}>
-                Sans-serif typefaces with a digital, futuristic aesthetic.
+                Black circle with four red triangles + Share Tech 400 wordmark.
               </p>
             </div>
 
-            {/* Font Grid */}
-            <div className="grid gap-8">
-              {fontOptions.map((font) => (
-                <div
-                  key={font.id}
-                  className="rounded-[16px] p-8 space-y-4"
-                  style={{
-                    background: "var(--surface-1)",
-                    border: "0.5px solid var(--border)",
-                  }}
-                >
-                  {/* Option number */}
-                  <div className="flex items-center justify-between">
-                    <span
-                      className="text-[11px] tracking-[0.15em] uppercase font-medium"
-                      style={{ color: "var(--t4)" }}
-                    >
-                      Option {font.id}
-                    </span>
-                    <span
-                      className="text-[11px] font-mono"
-                      style={{ color: "var(--t4)" }}
-                    >
-                      {font.name} {font.weight}
-                    </span>
-                  </div>
-
-                  {/* Font preview */}
-                  <div className="py-6 text-center overflow-hidden">
-                    <span
-                      className="leading-none inline-block"
-                      style={{
-                        fontFamily: font.fontFamily,
-                        fontWeight: font.weight,
-                        fontSize: "clamp(48px, 10vw, 72px)",
-                        letterSpacing: "-0.02em",
-                        color: "var(--t1)",
-                      }}
-                    >
-                      Specter
-                    </span>
-                  </div>
-
-                  {/* Description */}
-                  <p
-                    className="text-[13px] text-center leading-relaxed"
-                    style={{ color: "var(--t3)" }}
-                  >
-                    {font.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {/* Current font reference */}
+            {/* Logo Preview - Large */}
             <div
-              className="rounded-[16px] p-8 space-y-4"
+              className="rounded-[16px] p-12 space-y-8"
               style={{
-                background: "var(--surface-2)",
+                background: "var(--surface-1)",
                 border: "0.5px solid var(--border)",
               }}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col items-center gap-6">
+                <SpecterLogo size={160} />
                 <span
-                  className="text-[11px] tracking-[0.15em] uppercase font-medium"
-                  style={{ color: "var(--t4)" }}
-                >
-                  Current
-                </span>
-                <span
-                  className="text-[11px] font-mono"
-                  style={{ color: "var(--t4)" }}
-                >
-                  Rhymes Display 300
-                </span>
-              </div>
-              <div className="py-6 text-center">
-                <span
-                  className="leading-none"
                   style={{
-                    fontFamily: '"Rhymes Display", Georgia, serif',
-                    fontWeight: 300,
-                    fontStyle: "normal",
-                    fontSize: "clamp(64px, 12vw, 96px)",
-                    letterSpacing: "0.01em",
+                    fontFamily: '"Share Tech", sans-serif',
+                    fontWeight: 400,
+                    fontSize: "32px",
+                    letterSpacing: "0.15em",
                     color: "var(--t1)",
                   }}
                 >
-                  Specter
+                  SPECTER
                 </span>
               </div>
-              <p
-                className="text-[13px] text-center leading-relaxed"
-                style={{ color: "var(--t3)" }}
+            </div>
+
+            {/* Horizontal variant */}
+            <div
+              className="rounded-[16px] p-8 space-y-4"
+              style={{
+                background: "var(--surface-1)",
+                border: "0.5px solid var(--border)",
+              }}
+            >
+              <span
+                className="text-[11px] tracking-[0.15em] uppercase font-medium block"
+                style={{ color: "var(--t4)" }}
               >
-                Your current font for comparison.
-              </p>
+                Horizontal Variant
+              </span>
+              <div className="flex items-center justify-center gap-4 py-4">
+                <SpecterLogo size={48} />
+                <span
+                  style={{
+                    fontFamily: '"Share Tech", sans-serif',
+                    fontWeight: 400,
+                    fontSize: "24px",
+                    letterSpacing: "0.15em",
+                    color: "var(--t1)",
+                  }}
+                >
+                  SPECTER
+                </span>
+              </div>
+            </div>
+
+            {/* Size variations */}
+            <div
+              className="rounded-[16px] p-8 space-y-6"
+              style={{
+                background: "var(--surface-1)",
+                border: "0.5px solid var(--border)",
+              }}
+            >
+              <span
+                className="text-[11px] tracking-[0.15em] uppercase font-medium block"
+                style={{ color: "var(--t4)" }}
+              >
+                Size Variations
+              </span>
+              <div className="flex items-end justify-center gap-8 py-4">
+                <div className="flex flex-col items-center gap-2">
+                  <SpecterLogo size={80} />
+                  <span className="text-[10px]" style={{ color: "var(--t4)" }}>80px</span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <SpecterLogo size={48} />
+                  <span className="text-[10px]" style={{ color: "var(--t4)" }}>48px</span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <SpecterLogo size={32} />
+                  <span className="text-[10px]" style={{ color: "var(--t4)" }}>32px</span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <SpecterLogo size={24} />
+                  <span className="text-[10px]" style={{ color: "var(--t4)" }}>24px</span>
+                </div>
+              </div>
+            </div>
+
+            {/* On dark background */}
+            <div
+              className="rounded-[16px] p-8 space-y-4"
+              style={{
+                background: "#0a0a0a",
+                border: "0.5px solid var(--border)",
+              }}
+            >
+              <span
+                className="text-[11px] tracking-[0.15em] uppercase font-medium block"
+                style={{ color: "rgba(255,255,255,0.5)" }}
+              >
+                On Dark Background
+              </span>
+              <div className="flex items-center justify-center gap-4 py-4">
+                <SpecterLogo size={48} />
+                <span
+                  style={{
+                    fontFamily: '"Share Tech", sans-serif',
+                    fontWeight: 400,
+                    fontSize: "24px",
+                    letterSpacing: "0.15em",
+                    color: "white",
+                  }}
+                >
+                  SPECTER
+                </span>
+              </div>
             </div>
 
             {/* Back link */}
