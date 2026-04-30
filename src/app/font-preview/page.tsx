@@ -4,7 +4,8 @@ import { AppShell } from "@/components/AppShell";
 import Link from "next/link";
 
 function SpecterLogo({ size = 120 }: { size?: number }) {
-  const circleRadius = size / 2;
+  const strokeWidth = size * 0.04;
+  const circleRadius = (size - strokeWidth) / 2;
   const triangleHeight = size * 0.08;
   const triangleWidth = size * 0.25;
   const gap = size * 0.04;
@@ -19,8 +20,15 @@ function SpecterLogo({ size = 120 }: { size?: number }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Black circle */}
-      <circle cx={circleRadius} cy={circleRadius} r={circleRadius} fill="black" />
+      {/* Black ring */}
+      <circle 
+        cx={size / 2} 
+        cy={size / 2} 
+        r={circleRadius} 
+        fill="none" 
+        stroke="black" 
+        strokeWidth={strokeWidth} 
+      />
 
       {/* Four red triangles stacked vertically */}
       {[0, 1, 2, 3].map((i) => {
