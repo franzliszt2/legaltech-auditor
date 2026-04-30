@@ -6,38 +6,38 @@ import Link from "next/link";
 const fontOptions = [
   {
     id: 1,
-    name: "JetBrains Mono",
+    name: "Orbitron",
     weight: 700,
-    fontFamily: '"JetBrains Mono", monospace',
-    description: "Developer-favorite monospace. Clean, precise, and highly legible with coding ligatures.",
+    fontFamily: '"Orbitron", sans-serif',
+    description: "Geometric, futuristic typeface. Sharp angles evoke sci-fi interfaces and digital displays.",
   },
   {
     id: 2,
-    name: "IBM Plex Mono",
-    weight: 600,
-    fontFamily: '"IBM Plex Mono", monospace',
-    description: "Corporate tech aesthetic. Industrial, neutral, and unmistakably technical.",
+    name: "Rajdhani",
+    weight: 700,
+    fontFamily: '"Rajdhani", sans-serif',
+    description: "Technical sans-serif with angular terminals. Compact and machine-like.",
   },
   {
     id: 3,
-    name: "Space Mono",
+    name: "Exo 2",
     weight: 700,
-    fontFamily: '"Space Mono", monospace',
-    description: "Retro-futuristic vibe. Geometric, quirky, and distinctly digital.",
+    fontFamily: '"Exo 2", sans-serif',
+    description: "Contemporary geometric with subtle tech flourishes. Clean yet distinctly digital.",
   },
   {
     id: 4,
-    name: "Fira Code",
-    weight: 700,
-    fontFamily: '"Fira Code", monospace',
-    description: "Mozilla's coding font. Programming ligatures with a modern, sharp edge.",
+    name: "Audiowide",
+    weight: 400,
+    fontFamily: '"Audiowide", sans-serif',
+    description: "Wide, bold display face. Inspired by automotive and tech branding.",
   },
   {
     id: 5,
-    name: "Source Code Pro",
-    weight: 700,
-    fontFamily: '"Source Code Pro", monospace',
-    description: "Adobe's classic. Clean, professional, and universally recognized as code.",
+    name: "Share Tech",
+    weight: 400,
+    fontFamily: '"Share Tech", sans-serif',
+    description: "Utilitarian tech aesthetic. Simple, readable, unmistakably technical.",
   },
 ];
 
@@ -48,7 +48,7 @@ export default function FontPreview() {
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=IBM+Plex+Mono:wght@600&family=Space+Mono:wght@700&family=Fira+Code:wght@700&family=Source+Code+Pro:wght@700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@700&family=Exo+2:wght@700&family=Audiowide&family=Share+Tech&display=swap"
         rel="stylesheet"
       />
 
@@ -64,16 +64,16 @@ export default function FontPreview() {
                 className="text-[11px] tracking-[0.18em] uppercase"
                 style={{ color: "var(--t4)" }}
               >
-                Technical Fonts
+                Technical Typefaces
               </p>
               <h1
                 className="text-[28px] font-semibold tracking-[-0.02em]"
                 style={{ color: "var(--t1)" }}
               >
-                Code-inspired typefaces
+                Tech-inspired display fonts
               </h1>
               <p className="text-[14px]" style={{ color: "var(--t3)" }}>
-                Monospace fonts with a technical, bit-esque aesthetic.
+                Sans-serif typefaces with a digital, futuristic aesthetic.
               </p>
             </div>
 
