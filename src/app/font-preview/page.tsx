@@ -5,12 +5,15 @@ import Link from "next/link";
 
 function SpecterLogo({ size = 120 }: { size?: number }) {
   const strokeWidth = size * 0.04;
-  const circleRadius = (size - strokeWidth) / 2;
   const triangleHeight = size * 0.08;
   const triangleWidth = size * 0.25;
   const gap = size * 0.04;
   const totalStackHeight = triangleHeight * 4 + gap * 3;
   const startY = (size - totalStackHeight) / 2;
+  
+  // Ring sized to barely contain the triangles
+  const ringPadding = size * 0.02;
+  const circleRadius = (totalStackHeight / 2) + ringPadding;
 
   return (
     <svg
