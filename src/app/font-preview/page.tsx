@@ -3,54 +3,36 @@
 import { AppShell } from "@/components/AppShell";
 import Link from "next/link";
 
-const fontOptions = [
+const elongationOptions = [
   {
     id: 1,
-    name: "Playfair Display",
-    weight: 900,
-    style: "italic",
-    fontFamily: '"Playfair Display", Georgia, serif',
-    description: "Dramatic serif with high contrast. The italic adds gravitas and motion.",
+    scaleY: 1.0,
+    label: "Normal (1.0x)",
+    description: "Original proportions. Elegant but standard.",
   },
   {
     id: 2,
-    name: "Cormorant Garamond",
-    weight: 700,
-    style: "normal",
-    fontFamily: '"Cormorant Garamond", Georgia, serif',
-    description: "Elegant, sharp serifs with an editorial, almost haunting quality.",
+    scaleY: 1.1,
+    label: "Subtle (1.1x)",
+    description: "Slight vertical stretch. Taller and more refined.",
   },
   {
     id: 3,
-    name: "Crimson Pro",
-    weight: 800,
-    style: "normal",
-    fontFamily: '"Crimson Pro", Georgia, serif',
-    description: "Bold serif with refined letterforms. Professional yet commanding.",
+    scaleY: 1.15,
+    label: "Moderate (1.15x)",
+    description: "Noticeably elongated. Imposing yet balanced.",
   },
   {
     id: 4,
-    name: "EB Garamond",
-    weight: 700,
-    style: "italic",
-    fontFamily: '"EB Garamond", Georgia, serif',
-    description: "Classic old-style italic. Sophisticated and slightly ominous.",
+    scaleY: 1.2,
+    label: "Pronounced (1.2x)",
+    description: "Strong vertical emphasis. Commanding presence.",
   },
   {
     id: 5,
-    name: "Cinzel",
-    weight: 700,
-    style: "normal",
-    fontFamily: '"Cinzel", Georgia, serif',
-    description: "Roman-inspired capitals. Monumental, authoritative, and powerful.",
-  },
-  {
-    id: 6,
-    name: "Old Standard TT",
-    weight: 700,
-    style: "italic",
-    fontFamily: '"Old Standard TT", Georgia, serif',
-    description: "19th-century aesthetic. Evokes legal documents and old institutions.",
+    scaleY: 1.25,
+    label: "Dramatic (1.25x)",
+    description: "Maximum elongation. Bold and striking.",
   },
 ];
 
@@ -61,7 +43,7 @@ export default function FontPreview() {
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,900&family=Cormorant+Garamond:wght@700&family=Crimson+Pro:wght@800&family=EB+Garamond:ital,wght@1,700&family=Cinzel:wght@700&family=Old+Standard+TT:ital,wght@1,700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap"
         rel="stylesheet"
       />
 
@@ -77,24 +59,24 @@ export default function FontPreview() {
                 className="text-[11px] tracking-[0.18em] uppercase"
                 style={{ color: "var(--t4)" }}
               >
-                Font Options
+                Cormorant Garamond 700
               </p>
               <h1
                 className="text-[28px] font-semibold tracking-[-0.02em]"
                 style={{ color: "var(--t1)" }}
               >
-                Choose a typeface for &ldquo;Specter&rdquo;
+                Choose vertical elongation
               </h1>
               <p className="text-[14px]" style={{ color: "var(--t3)" }}>
-                Here are 6 imposing serif options. Each conveys authority and gravitas.
+                Select the amount of vertical stretch for an imposing look.
               </p>
             </div>
 
-            {/* Font Grid */}
+            {/* Elongation Grid */}
             <div className="grid gap-8">
-              {fontOptions.map((font) => (
+              {elongationOptions.map((option) => (
                 <div
-                  key={font.id}
+                  key={option.id}
                   className="rounded-[16px] p-8 space-y-4"
                   style={{
                     background: "var(--surface-1)",
@@ -107,27 +89,29 @@ export default function FontPreview() {
                       className="text-[11px] tracking-[0.15em] uppercase font-medium"
                       style={{ color: "var(--t4)" }}
                     >
-                      Option {font.id}
+                      Option {option.id}
                     </span>
                     <span
                       className="text-[11px] font-mono"
                       style={{ color: "var(--t4)" }}
                     >
-                      {font.name} {font.weight} {font.style !== "normal" ? font.style : ""}
+                      {option.label}
                     </span>
                   </div>
 
                   {/* Font preview */}
-                  <div className="py-6 text-center">
+                  <div className="py-6 text-center overflow-hidden">
                     <span
-                      className="leading-none"
+                      className="leading-none inline-block"
                       style={{
-                        fontFamily: font.fontFamily,
-                        fontWeight: font.weight,
-                        fontStyle: font.style,
+                        fontFamily: '"Cormorant Garamond", Georgia, serif',
+                        fontWeight: 700,
+                        fontStyle: "normal",
                         fontSize: "clamp(64px, 12vw, 96px)",
                         letterSpacing: "0.02em",
                         color: "var(--t1)",
+                        transform: `scaleY(${option.scaleY})`,
+                        transformOrigin: "center center",
                       }}
                     >
                       Specter
@@ -139,7 +123,7 @@ export default function FontPreview() {
                     className="text-[13px] text-center leading-relaxed"
                     style={{ color: "var(--t3)" }}
                   >
-                    {font.description}
+                    {option.description}
                   </p>
                 </div>
               ))}
@@ -186,7 +170,7 @@ export default function FontPreview() {
                 className="text-[13px] text-center leading-relaxed"
                 style={{ color: "var(--t3)" }}
               >
-                Your current font. Light and elegant, but less imposing.
+                Your current font for comparison.
               </p>
             </div>
 
