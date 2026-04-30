@@ -3,36 +3,41 @@
 import { AppShell } from "@/components/AppShell";
 import Link from "next/link";
 
-const elongationOptions = [
+const fontOptions = [
   {
     id: 1,
-    scaleY: 1.0,
-    label: "Normal (1.0x)",
-    description: "Original proportions. Elegant but standard.",
+    name: "JetBrains Mono",
+    weight: 700,
+    fontFamily: '"JetBrains Mono", monospace',
+    description: "Developer-favorite monospace. Clean, precise, and highly legible with coding ligatures.",
   },
   {
     id: 2,
-    scaleY: 1.1,
-    label: "Subtle (1.1x)",
-    description: "Slight vertical stretch. Taller and more refined.",
+    name: "IBM Plex Mono",
+    weight: 600,
+    fontFamily: '"IBM Plex Mono", monospace',
+    description: "Corporate tech aesthetic. Industrial, neutral, and unmistakably technical.",
   },
   {
     id: 3,
-    scaleY: 1.15,
-    label: "Moderate (1.15x)",
-    description: "Noticeably elongated. Imposing yet balanced.",
+    name: "Space Mono",
+    weight: 700,
+    fontFamily: '"Space Mono", monospace',
+    description: "Retro-futuristic vibe. Geometric, quirky, and distinctly digital.",
   },
   {
     id: 4,
-    scaleY: 1.2,
-    label: "Pronounced (1.2x)",
-    description: "Strong vertical emphasis. Commanding presence.",
+    name: "Fira Code",
+    weight: 700,
+    fontFamily: '"Fira Code", monospace',
+    description: "Mozilla's coding font. Programming ligatures with a modern, sharp edge.",
   },
   {
     id: 5,
-    scaleY: 1.25,
-    label: "Dramatic (1.25x)",
-    description: "Maximum elongation. Bold and striking.",
+    name: "Source Code Pro",
+    weight: 700,
+    fontFamily: '"Source Code Pro", monospace',
+    description: "Adobe's classic. Clean, professional, and universally recognized as code.",
   },
 ];
 
@@ -43,7 +48,7 @@ export default function FontPreview() {
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=IBM+Plex+Mono:wght@600&family=Space+Mono:wght@700&family=Fira+Code:wght@700&family=Source+Code+Pro:wght@700&display=swap"
         rel="stylesheet"
       />
 
@@ -59,24 +64,24 @@ export default function FontPreview() {
                 className="text-[11px] tracking-[0.18em] uppercase"
                 style={{ color: "var(--t4)" }}
               >
-                Cormorant Garamond 700
+                Technical Fonts
               </p>
               <h1
                 className="text-[28px] font-semibold tracking-[-0.02em]"
                 style={{ color: "var(--t1)" }}
               >
-                Choose vertical elongation
+                Code-inspired typefaces
               </h1>
               <p className="text-[14px]" style={{ color: "var(--t3)" }}>
-                Select the amount of vertical stretch for an imposing look.
+                Monospace fonts with a technical, bit-esque aesthetic.
               </p>
             </div>
 
-            {/* Elongation Grid */}
+            {/* Font Grid */}
             <div className="grid gap-8">
-              {elongationOptions.map((option) => (
+              {fontOptions.map((font) => (
                 <div
-                  key={option.id}
+                  key={font.id}
                   className="rounded-[16px] p-8 space-y-4"
                   style={{
                     background: "var(--surface-1)",
@@ -89,13 +94,13 @@ export default function FontPreview() {
                       className="text-[11px] tracking-[0.15em] uppercase font-medium"
                       style={{ color: "var(--t4)" }}
                     >
-                      Option {option.id}
+                      Option {font.id}
                     </span>
                     <span
                       className="text-[11px] font-mono"
                       style={{ color: "var(--t4)" }}
                     >
-                      {option.label}
+                      {font.name} {font.weight}
                     </span>
                   </div>
 
@@ -104,14 +109,11 @@ export default function FontPreview() {
                     <span
                       className="leading-none inline-block"
                       style={{
-                        fontFamily: '"Cormorant Garamond", Georgia, serif',
-                        fontWeight: 700,
-                        fontStyle: "normal",
-                        fontSize: "clamp(64px, 12vw, 96px)",
-                        letterSpacing: "0.02em",
+                        fontFamily: font.fontFamily,
+                        fontWeight: font.weight,
+                        fontSize: "clamp(48px, 10vw, 72px)",
+                        letterSpacing: "-0.02em",
                         color: "var(--t1)",
-                        transform: `scaleY(${option.scaleY})`,
-                        transformOrigin: "center center",
                       }}
                     >
                       Specter
@@ -123,7 +125,7 @@ export default function FontPreview() {
                     className="text-[13px] text-center leading-relaxed"
                     style={{ color: "var(--t3)" }}
                   >
-                    {option.description}
+                    {font.description}
                   </p>
                 </div>
               ))}
