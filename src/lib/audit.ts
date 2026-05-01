@@ -11,7 +11,7 @@ const MODEL = (process.env.AUDIT_MODEL as string | undefined) ?? "claude-sonnet-
 // Cost-control constants — keep a single audit well under $1
 const MAX_FILE_CHARS = 6_000;        // per-file char limit in prompts (~1.5k tokens)
 const MAX_TOTAL_INPUT_CHARS = 80_000; // total char budget across all files in one call (~20k tokens)
-const AUDIT_STAGE_TIMEOUT_MS = 55_000; // per-stage API timeout before the 120s Vercel limit
+const AUDIT_STAGE_TIMEOUT_MS = 90_000; // per-stage timeout — cold cache + 4096 output tokens on Sonnet can take 60-80s
 
 // Wraps a promise with a hard timeout, raising a descriptive error if exceeded
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {

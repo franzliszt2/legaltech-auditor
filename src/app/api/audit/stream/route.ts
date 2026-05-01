@@ -2,10 +2,10 @@ import { fetchRepo } from "@/lib/github";
 import { runTriage, runSecurityAudit, runEthicsAudit, assembleReport } from "@/lib/audit";
 import type { ProgressEvent } from "@/lib/types";
 
-export const maxDuration = 120;
+export const maxDuration = 300;
 
-// Overall audit timeout — sends a clean error message before Vercel hard-kills at 120s
-const TOTAL_AUDIT_TIMEOUT_MS = 108_000;
+// Overall audit timeout — sends a clean error message before Vercel hard-kills at 300s
+const TOTAL_AUDIT_TIMEOUT_MS = 285_000;
 
 function encode(event: ProgressEvent): string {
   return `data: ${JSON.stringify(event)}\n\n`;
