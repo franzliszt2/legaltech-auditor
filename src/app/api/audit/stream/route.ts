@@ -1,11 +1,11 @@
 import { fetchRepo } from "@/lib/github";
-import { runTriage, runSecurityAudit, runEthicsAudit, assembleReport } from "@/lib/audit";
+import { runTriage, runAudit, assembleReport } from "@/lib/audit";
 import type { ProgressEvent } from "@/lib/types";
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 
-// Overall audit timeout — sends a clean error message before Vercel hard-kills at 60s
-const TOTAL_AUDIT_TIMEOUT_MS = 55_000;
+// SSE timeout — sends a clean error just before Vercel's hard kill at 120s
+const TOTAL_AUDIT_TIMEOUT_MS = 108_000;
 
 function encode(event: ProgressEvent): string {
   return `data: ${JSON.stringify(event)}\n\n`;
@@ -30,12 +30,11 @@ export async function POST(request: Request) {
         try { controller.close(); } catch { /* already closed */ }
       };
 
-      // Timeout guard — provides a clean error before Vercel's hard cut at 120s
       const timeoutId = setTimeout(() => {
         send({
           stage: "error",
           message: "Audit timed out.",
-          error: "The audit exceeded the time limit. Try a smaller repository or reduce file count.",
+          error: "The audit exceeded the time limit. Try a smaller repository.",
         });
         close();
       }, TOTAL_AUDIT_TIMEOUT_MS);
@@ -47,23 +46,18 @@ export async function POST(request: Request) {
         send({ stage: "triage", message: `Triaging ${bundle.files.length} relevant files…` });
         const triage = await runTriage(bundle);
 
+        // Security and ethics now run in a single API call to stay within the 120s ceiling
         send({
           stage: "security",
-          message: `Running security audit (${triage.securityPaths.length + triage.aiRiskPaths.length} files)…`,
+          message: `Auditing ${[...new Set([...triage.securityPaths, ...triage.aiRiskPaths, ...triage.ethicsPaths])].length} files for security, AI risk, and ethics…`,
         });
-        const secFindings = await runSecurityAudit(bundle, triage);
+        const findings = await runAudit(bundle, triage);
 
-        send({
-          stage: "ethics",
-          message: `Running legal ethics audit (${triage.ethicsPaths.length} files)…`,
-        });
-        const ethicsFindings = await runEthicsAudit(bundle, triage);
+        // Advance the progress UI through ethics before assembly
+        send({ stage: "ethics", message: "Applying legal ethics analysis…" });
 
         send({ stage: "assembly", message: "Assembling final report…" });
-        const report = await assembleReport(
-          bundle.repo,
-          [...secFindings, ...ethicsFindings]
-        );
+        const report = await assembleReport(bundle.repo, findings);
 
         send({ stage: "complete", message: "Audit complete.", report });
       } catch (err) {
