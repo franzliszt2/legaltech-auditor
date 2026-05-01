@@ -4,6 +4,9 @@ import type { ProgressEvent } from "@/lib/types";
 
 export const maxDuration = 120;
 
+// Overall audit timeout — sends a clean error message before Vercel hard-kills at 120s
+const TOTAL_AUDIT_TIMEOUT_MS = 108_000;
+
 function encode(event: ProgressEvent): string {
   return `data: ${JSON.stringify(event)}\n\n`;
 }
@@ -14,8 +17,28 @@ export async function POST(request: Request) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
-      const send = (event: ProgressEvent) =>
-        controller.enqueue(encoder.encode(encode(event)));
+      let closed = false;
+
+      const send = (event: ProgressEvent) => {
+        if (closed) return;
+        try { controller.enqueue(encoder.encode(encode(event))); } catch { /* stream closed */ }
+      };
+
+      const close = () => {
+        if (closed) return;
+        closed = true;
+        try { controller.close(); } catch { /* already closed */ }
+      };
+
+      // Timeout guard — provides a clean error before Vercel's hard cut at 120s
+      const timeoutId = setTimeout(() => {
+        send({
+          stage: "error",
+          message: "Audit timed out.",
+          error: "The audit exceeded the time limit. Try a smaller repository or reduce file count.",
+        });
+        close();
+      }, TOTAL_AUDIT_TIMEOUT_MS);
 
       try {
         send({ stage: "fetch", message: "Fetching repository structure…" });
@@ -50,7 +73,8 @@ export async function POST(request: Request) {
           error: err instanceof Error ? err.message : String(err),
         });
       } finally {
-        controller.close();
+        clearTimeout(timeoutId);
+        close();
       }
     },
   });

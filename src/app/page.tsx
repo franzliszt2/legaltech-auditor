@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
-import { ProgressPanel } from "@/components/ProgressPanel";
+import { AuditLoadingPanel } from "@/components/AuditLoadingPanel";
 import { ReportView } from "@/components/ReportView";
 import type { AuditReport, ProgressEvent, ProgressStage } from "@/lib/types";
 
@@ -174,9 +174,12 @@ export default function Home() {
   const [report, setReport]           = useState<AuditReport | null>(null);
   const [errorMsg, setErrorMsg]       = useState("");
   const abortRef = useRef<AbortController | null>(null);
+  const heroRef  = useRef<HTMLElement>(null);
+  const demoRef  = useRef<HTMLElement>(null);
 
   async function runAudit() {
     if (!repoUrl.trim()) return;
+    window.scrollTo({ top: 0, behavior: "smooth" });
     setAppState("running");
     setReport(null);
     setErrorMsg("");
@@ -239,173 +242,348 @@ export default function Home() {
 
   return (
     <AppShell context={shellContext}>
-      <div
-        className="flex flex-col items-center justify-center px-5 py-16"
-        style={{ minHeight: "calc(100vh - 52px)" }}
-      >
 
-        {/* ── IDLE ── */}
-        {appState === "idle" && (
-          <div className="w-full max-w-[520px] space-y-10">
+      {/* ── IDLE: Hero + Demo ─────────────────────────────── */}
+      {appState === "idle" && (
+        <>
+          {/* Hero Section
+              Background: /public/aivazovsky-storm.jpg
+              To add the painting: download a public-domain version of
+              Ivan Aivazovsky's "The Storm at Sea" and save it as
+              public/aivazovsky-storm.jpg. Without the file, the
+              CSS gradient fallback creates a similar dark maritime mood. */}
+          <section
+            ref={heroRef}
+            style={{
+              position: "relative",
+              minHeight: "calc(100vh - 52px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+              // Gradient fallback evokes the painting's dark, stormy maritime atmosphere
+              background: "linear-gradient(160deg, #0b1e38 0%, #0d2547 20%, #122137 45%, #1c1008 72%, #0e0b1a 100%)",
+              backgroundImage: "url('/aivazovsky-storm.jpg')",
+              backgroundSize: "cover",
+              backgroundPosition: "center center",
+            }}
+          >
+            {/* Gradient overlay — improves text legibility over the painting */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.52) 55%, rgba(0,0,0,0.84) 100%)",
+                pointerEvents: "none",
+              }}
+            />
 
-            {/* Wordmark hero */}
-            <div className="text-center space-y-5">
+            {/* Hero content */}
+            <div
+              style={{
+                position: "relative",
+                zIndex: 10,
+                width: "100%",
+                maxWidth: "560px",
+                padding: "0 28px",
+                textAlign: "center",
+              }}
+            >
+              {/* Slogan */}
               <h1
-                className="leading-none"
                 style={{
-                  fontFamily: '"Rhymes Display", Georgia, serif',
-                  fontStyle: "normal",
-                  fontWeight: 300,
-                  fontSize: "clamp(74px, 15vw, 110px)",
-                  letterSpacing: "0.01em",
-                  color: "var(--t1)",
+                  fontFamily: '"Times New Roman", Times, Georgia, serif',
+                  fontWeight: 400,
+                  fontSize: "clamp(40px, 7.5vw, 72px)",
+                  lineHeight: 1.08,
+                  letterSpacing: "-0.02em",
+                  color: "rgba(255, 248, 232, 0.96)",
+                  textShadow: "0 2px 48px rgba(0,0,0,0.55)",
+                  marginBottom: "22px",
                 }}
               >
-                Specter
+                Can You Ship That Code?
               </h1>
 
               {/* Thin rule */}
               <div
-                className="w-10 mx-auto"
-                style={{ height: "0.5px", background: "var(--border-strong)" }}
+                style={{
+                  width: "40px",
+                  height: "0.5px",
+                  background: "rgba(255,248,232,0.3)",
+                  margin: "0 auto 22px",
+                }}
               />
 
+              {/* Descriptor */}
               <p
-                className="text-[15px] leading-relaxed tracking-[-0.01em]"
-                style={{ color: "var(--t3)" }}
-              >
-                Proprietary legal auditing engine. Trusted security,
-                <br className="hidden sm:block" /> ethics, and AI risk analysis against OWASP, MITRE ATLAS, and ABA standards.
-              </p>
-            </div>
-
-            {/* Input */}
-            <div className="space-y-3">
-              <div
-                className="flex items-center rounded-[14px] overflow-hidden"
                 style={{
-                  background: "var(--surface-1)",
-                  border: "0.5px solid var(--border)",
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+                  fontSize: "clamp(14px, 2vw, 16px)",
+                  lineHeight: 1.65,
+                  color: "rgba(255, 248, 232, 0.60)",
+                  letterSpacing: "-0.01em",
+                  maxWidth: "440px",
+                  margin: "0 auto 36px",
                 }}
               >
-                <input
-                  type="url"
-                  value={repoUrl}
-                  onChange={(e) => setRepoUrl(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && runAudit()}
-                  placeholder="github.com/owner/repo"
-                  className="flex-1 bg-transparent px-4 py-3.5 text-[14px] font-mono focus:outline-none tracking-[-0.01em]"
-                  style={{ color: "var(--t1)" }}
-                />
-                <button
-                  onClick={runAudit}
-                  disabled={!repoUrl.trim()}
-                  className="px-5 py-3.5 text-[14px] font-semibold transition-opacity mr-1 rounded-[10px] tracking-[-0.01em] disabled:opacity-25 disabled:cursor-not-allowed"
-                  style={{ background: "var(--t1)", color: "var(--bg)" }}
-                >
-                  Audit
-                </button>
-              </div>
+                Specter is an automated, full-stack auditing tool built as the necessary filter between your localhost and enterprise platform. Keep your information secure, your codebase compliant, and your MVP viable.
+              </p>
 
-              <div className="flex items-center justify-center gap-5">
-                <button
-                  onClick={() => {
-                    setRepoUrl(SAMPLE_REPO);
-                    setReport(SAMPLE_REPORT);
-                    setAppState("done");
+              {/* Input form */}
+              <div style={{ maxWidth: "460px", margin: "0 auto" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    borderRadius: "14px",
+                    overflow: "hidden",
+                    background: "rgba(255,255,255,0.09)",
+                    border: "0.5px solid rgba(255,255,255,0.18)",
+                    backdropFilter: "blur(24px)",
+                    WebkitBackdropFilter: "blur(24px)",
                   }}
-                  className="text-[12px] transition-colors"
-                  style={{ color: "var(--t4)" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t3)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t4)")}
                 >
-                  View sample report
-                </button>
-                <span style={{ color: "var(--t4)", fontSize: "11px" }}>·</span>
-                <Link
-                  href="/demo"
-                  className="text-[12px] transition-colors"
-                  style={{ color: "var(--t4)" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t3)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t4)")}
+                  <input
+                    type="url"
+                    value={repoUrl}
+                    onChange={(e) => setRepoUrl(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && runAudit()}
+                    placeholder="github.com/owner/repo"
+                    style={{
+                      flex: 1,
+                      background: "transparent",
+                      padding: "14px 16px",
+                      fontSize: "14px",
+                      fontFamily: '"SF Mono", ui-monospace, "Cascadia Code", monospace',
+                      color: "rgba(255,255,255,0.9)",
+                      outline: "none",
+                      letterSpacing: "-0.01em",
+                      border: "none",
+                    }}
+                  />
+                  <button
+                    onClick={runAudit}
+                    disabled={!repoUrl.trim()}
+                    style={{
+                      padding: "10px 20px",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      background: "rgba(255,255,255,0.88)",
+                      color: "rgba(0,0,0,0.85)",
+                      borderRadius: "10px",
+                      margin: "4px",
+                      cursor: repoUrl.trim() ? "pointer" : "not-allowed",
+                      opacity: repoUrl.trim() ? 1 : 0.35,
+                      letterSpacing: "-0.01em",
+                      border: "none",
+                      transition: "opacity 0.15s ease",
+                      flexShrink: 0,
+                    }}
+                  >
+                    Audit
+                  </button>
+                </div>
+
+                {/* Sub-links */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "20px",
+                    marginTop: "16px",
+                  }}
                 >
-                  About Specter
-                </Link>
+                  <button
+                    onClick={() => demoRef.current?.scrollIntoView({ behavior: "smooth" })}
+                    style={{
+                      fontSize: "12px",
+                      color: "rgba(255,248,232,0.40)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      letterSpacing: "-0.01em",
+                      transition: "color 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,248,232,0.65)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,248,232,0.40)")}
+                  >
+                    See demo report ↓
+                  </button>
+                  <span style={{ color: "rgba(255,248,232,0.20)", fontSize: "11px" }}>·</span>
+                  <Link
+                    href="/demo"
+                    style={{
+                      fontSize: "12px",
+                      color: "rgba(255,248,232,0.40)",
+                      textDecoration: "none",
+                      letterSpacing: "-0.01em",
+                      transition: "color 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,248,232,0.65)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,248,232,0.40)")}
+                  >
+                    About Specter
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* ── RUNNING ── */}
-        {appState === "running" && (
-          <div className="w-full max-w-[300px] space-y-10">
-            <p
-              className="text-[11px] tracking-[0.18em] uppercase text-center"
-              style={{ color: "var(--t4)" }}
+            {/* Scroll indicator */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: "32px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "8px",
+                pointerEvents: "none",
+              }}
             >
-              Analyzing
-            </p>
-            <ProgressPanel currentStage={currentStage} message={progressMsg} />
-            <div className="text-center">
+              <div
+                style={{
+                  width: "0.5px",
+                  height: "28px",
+                  background: "rgba(255,248,232,0.18)",
+                }}
+              />
+              <span
+                style={{
+                  fontSize: "9px",
+                  letterSpacing: "0.18em",
+                  color: "rgba(255,248,232,0.25)",
+                  textTransform: "uppercase",
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+                }}
+              >
+                scroll
+              </span>
+            </div>
+          </section>
+
+          {/* Demo Report Section */}
+          <section
+            ref={demoRef}
+            style={{
+              background: "var(--bg)",
+              padding: "72px 20px 80px",
+            }}
+          >
+            <div style={{ maxWidth: "580px", margin: "0 auto" }}>
+              <p
+                style={{
+                  fontSize: "10px",
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "var(--t4)",
+                  textAlign: "center",
+                  marginBottom: "36px",
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+                }}
+              >
+                Sample audit report
+              </p>
+
+              <ReportView report={SAMPLE_REPORT} />
+
+              <div style={{ textAlign: "center", marginTop: "52px" }}>
+                <button
+                  onClick={() => heroRef.current?.scrollIntoView({ behavior: "smooth" })}
+                  className="text-[12px] transition-colors"
+                  style={{ color: "var(--t4)", background: "none", border: "none", cursor: "pointer" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t3)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t4)")}
+                >
+                  ↑ Run your own audit
+                </button>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* ── RUNNING / DONE / ERROR ─────────────────────────── */}
+      {appState !== "idle" && (
+        <div
+          className="flex flex-col items-center justify-center px-5 py-16"
+          style={{ minHeight: "calc(100vh - 52px)" }}
+        >
+          {/* ── RUNNING ── */}
+          {appState === "running" && (
+            <div className="w-full max-w-[300px] space-y-10">
+              <p
+                className="text-[11px] tracking-[0.18em] uppercase text-center"
+                style={{ color: "var(--t4)" }}
+              >
+                Analyzing
+              </p>
+              <AuditLoadingPanel currentStage={currentStage} message={progressMsg} />
+              <div className="text-center">
+                <button
+                  onClick={reset}
+                  className="text-[12px] transition-colors"
+                  style={{ color: "var(--t4)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t3)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t4)")}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── ERROR ── */}
+          {appState === "error" && (
+            <div className="w-full max-w-[520px] text-center space-y-4">
+              <p
+                className="text-[15px] font-medium tracking-[-0.01em]"
+                style={{ color: "var(--ios-red)" }}
+              >
+                Audit failed
+              </p>
+              <p
+                className="text-[13px] font-mono leading-relaxed"
+                style={{ color: "var(--t3)" }}
+              >
+                {errorMsg}
+              </p>
               <button
                 onClick={reset}
-                className="text-[12px] transition-colors"
-                style={{ color: "var(--t4)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t3)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t4)")}
+                className="text-[13px] transition-colors"
+                style={{ color: "var(--t3)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t2)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t3)")}
               >
-                Cancel
+                Try again
               </button>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ── ERROR ── */}
-        {appState === "error" && (
-          <div className="w-full max-w-[520px] text-center space-y-4">
-            <p
-              className="text-[15px] font-medium tracking-[-0.01em]"
-              style={{ color: "var(--ios-red)" }}
-            >
-              Audit failed
-            </p>
-            <p
-              className="text-[13px] font-mono leading-relaxed"
-              style={{ color: "var(--t3)" }}
-            >
-              {errorMsg}
-            </p>
-            <button
-              onClick={reset}
-              className="text-[13px] transition-colors"
-              style={{ color: "var(--t3)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t2)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t3)")}
-            >
-              Try again
-            </button>
-          </div>
-        )}
-
-        {/* ── DONE ── */}
-        {appState === "done" && report && (
-          <div className="w-full max-w-[580px] space-y-2">
-            <ReportView report={report} />
-            <div className="text-center pt-8 pb-2">
-              <button
-                onClick={reset}
-                className="text-[12px] transition-colors"
-                style={{ color: "var(--t4)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t3)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t4)")}
-              >
-                New audit
-              </button>
+          {/* ── DONE ── */}
+          {appState === "done" && report && (
+            <div className="w-full max-w-[580px] space-y-2">
+              <ReportView report={report} showShareButton />
+              <div className="text-center pt-8 pb-2">
+                <button
+                  onClick={reset}
+                  className="text-[12px] transition-colors"
+                  style={{ color: "var(--t4)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t3)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t4)")}
+                >
+                  New audit
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
-      </div>
     </AppShell>
   );
 }

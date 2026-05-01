@@ -1,6 +1,23 @@
 import { Octokit } from "@octokit/rest";
 import type { RepoBundle, RepoFile, FileType } from "./types";
 
+// Always exclude these paths regardless of high-signal patterns
+const EXCLUDE_PATTERNS: RegExp[] = [
+  /^node_modules\//,
+  /^\.git\//,
+  /^\.(next|nuxt|svelte-kit|output)\//,
+  /^(dist|build|out|\.build)\//,
+  /\.(min\.js|bundle\.js|min\.css)$/,
+  /\.map$/,
+];
+
+function isExcluded(filePath: string): boolean {
+  return EXCLUDE_PATTERNS.some((p) => p.test(filePath));
+}
+
+// Total character budget across all files — ~50k tokens at 4 chars/token
+const MAX_BUNDLE_CHARS = 180_000;
+
 const HIGH_SIGNAL_PATTERNS: RegExp[] = [
   // Dependency manifests
   /^package\.json$/,
@@ -42,8 +59,9 @@ const HIGH_SIGNAL_PATTERNS: RegExp[] = [
   /privacy/i,
 ];
 
-const MAX_FILES = 35;
-const MAX_FILE_BYTES = 60_000;
+// Keep file count and per-file size bounded for cost and speed
+const MAX_FILES = 25;
+const MAX_FILE_BYTES = 30_000;
 
 function classifyFile(filePath: string): FileType {
   if (/requirements\.txt|package\.json|package-lock|poetry\.lock|pnpm-lock/.test(filePath))
@@ -84,7 +102,12 @@ export async function fetchRepo(repoUrl: string): Promise<RepoBundle> {
   });
 
   const candidates = treeData.tree
-    .filter((item) => item.type === "blob" && item.path && isHighSignal(item.path))
+    .filter((item) =>
+      item.type === "blob" &&
+      item.path &&
+      !isExcluded(item.path) &&
+      isHighSignal(item.path)
+    )
     .slice(0, MAX_FILES);
 
   const files: RepoFile[] = (
@@ -111,5 +134,13 @@ export async function fetchRepo(repoUrl: string): Promise<RepoBundle> {
     )
   ).filter((f): f is RepoFile => f !== null);
 
-  return { repo: `${owner}/${repo}`, files };
+  // Apply total bundle budget to cap aggregate input to the model
+  let totalChars = 0;
+  const budgetedFiles = files.filter((f) => {
+    if (totalChars + f.content.length > MAX_BUNDLE_CHARS) return false;
+    totalChars += f.content.length;
+    return true;
+  });
+
+  return { repo: `${owner}/${repo}`, files: budgetedFiles };
 }

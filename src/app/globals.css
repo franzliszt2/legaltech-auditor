@@ -81,6 +81,25 @@
   transform-origin: center;
 }
 
+@keyframes cursor-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes line-fade-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.terminal-line {
+  animation: line-fade-in 0.15s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal-line { animation: none; }
+  .spin-progress { animation: none; }
+}
+
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

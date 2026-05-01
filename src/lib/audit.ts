@@ -3,7 +3,25 @@ import type { RepoBundle, TriageMap, Finding, AuditReport, OverallScore } from "
 import { buildSecurityContext, buildEthicsContext } from "./context";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const MODEL = "claude-sonnet-4-6";
+
+// Model selection: override via AUDIT_MODEL env var.
+// Use claude-haiku-4-5-20251001 for faster/cheaper runs.
+const MODEL = (process.env.AUDIT_MODEL as string | undefined) ?? "claude-sonnet-4-6";
+
+// Cost-control constants — keep a single audit well under $1
+const MAX_FILE_CHARS = 6_000;        // per-file char limit in prompts (~1.5k tokens)
+const MAX_TOTAL_INPUT_CHARS = 80_000; // total char budget across all files in one call (~20k tokens)
+const AUDIT_STAGE_TIMEOUT_MS = 55_000; // per-stage API timeout before the 120s Vercel limit
+
+// Wraps a promise with a hard timeout, raising a descriptive error if exceeded
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms / 1000}s`)), ms)
+    ),
+  ]);
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -14,9 +32,18 @@ function formatFiles(
   const files = paths
     ? bundle.files.filter((f) => paths.includes(f.path))
     : bundle.files;
-  return files
-    .map((f) => `### ${f.path}\n\`\`\`\n${f.content.slice(0, 8000)}\n\`\`\``)
-    .join("\n\n");
+
+  // Enforce per-file and total char budgets to keep API costs bounded
+  let totalChars = 0;
+  const blocks: string[] = [];
+  for (const f of files) {
+    const content = f.content.slice(0, MAX_FILE_CHARS);
+    const block = `### ${f.path}\n\`\`\`\n${content}\n\`\`\``;
+    if (totalChars + block.length > MAX_TOTAL_INPUT_CHARS) break;
+    blocks.push(block);
+    totalChars += block.length;
+  }
+  return blocks.join("\n\n");
 }
 
 function recoverPartialArray(text: string): unknown[] {
@@ -82,7 +109,7 @@ export async function runTriage(bundle: RepoBundle): Promise<TriageMap> {
     .map((f) => `### ${f.path}\n${f.content.slice(0, 600)}`)
     .join("\n\n");
 
-  const response = await anthropic.messages.create({
+  const response = await withTimeout(anthropic.messages.create({
     model: MODEL,
     max_tokens: 1024,
     system:
@@ -112,7 +139,7 @@ Rules:
 - Include only paths that actually exist in the manifest above`,
       },
     ],
-  });
+  }), AUDIT_STAGE_TIMEOUT_MS, "Triage");
 
   const text = response.content[0].type === "text" ? response.content[0].text : "";
   return extractJson<TriageMap>(text);
@@ -141,9 +168,9 @@ export async function runSecurityAudit(
   const allPaths = [...new Set([...triage.securityPaths, ...triage.aiRiskPaths])];
   const codeBlock = formatFiles(bundle, allPaths.length ? allPaths : undefined);
 
-  const response = await anthropic.messages.create({
+  const response = await withTimeout(anthropic.messages.create({
     model: MODEL,
-    max_tokens: 8192,
+    max_tokens: 4096, // 4096 is ample for typical finding sets; reduces cost vs 8192
     system: [
       {
         type: "text",
@@ -182,7 +209,7 @@ ${FINDING_SCHEMA}
 \`\`\``,
       },
     ],
-  });
+  }), AUDIT_STAGE_TIMEOUT_MS, "Security audit");
 
   const text = response.content[0].type === "text" ? response.content[0].text : "[]";
   return extractJson<Finding[]>(text);
@@ -200,9 +227,9 @@ export async function runEthicsAudit(
     triage.ethicsPaths.length ? triage.ethicsPaths : undefined
   );
 
-  const response = await anthropic.messages.create({
+  const response = await withTimeout(anthropic.messages.create({
     model: MODEL,
-    max_tokens: 8192,
+    max_tokens: 4096, // 4096 is ample for typical finding sets; reduces cost vs 8192
     system: [
       {
         type: "text",
@@ -246,7 +273,7 @@ ${FINDING_SCHEMA}
 \`\`\``,
       },
     ],
-  });
+  }), AUDIT_STAGE_TIMEOUT_MS, "Ethics audit");
 
   const text = response.content[0].type === "text" ? response.content[0].text : "[]";
   return extractJson<Finding[]>(text);
