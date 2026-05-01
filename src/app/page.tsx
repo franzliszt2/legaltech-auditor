@@ -431,7 +431,47 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Painting attribution */}
+            {/* Project attribution — bottom left */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: "28px",
+                left: "24px",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                pointerEvents: "none",
+              }}
+            >
+              {/* UC Berkeley Seal */}
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                <circle cx="18" cy="18" r="16.5" stroke="rgba(212,175,100,0.45)" strokeWidth="0.75"/>
+                <circle cx="18" cy="18" r="13"   stroke="rgba(212,175,100,0.28)" strokeWidth="0.5"/>
+                <text x="18" y="16.5" textAnchor="middle" fill="rgba(212,175,100,0.65)" fontSize="7.5" fontFamily="Times New Roman, Times, Georgia, serif" fontWeight="400" letterSpacing="0.5">UC</text>
+                <text x="18" y="23.5" textAnchor="middle" fill="rgba(212,175,100,0.50)" fontSize="4"   fontFamily="Times New Roman, Times, Georgia, serif" fontWeight="300" letterSpacing="1.2">BERKELEY</text>
+                {/* Decorative top arc rule */}
+                <path d="M10 10.5 A 10 10 0 0 1 26 10.5" stroke="rgba(212,175,100,0.30)" strokeWidth="0.5" fill="none"/>
+                <path d="M10 25.5 A 10 10 0 0 0 26 25.5" stroke="rgba(212,175,100,0.30)" strokeWidth="0.5" fill="none"/>
+              </svg>
+
+              <p
+                style={{
+                  fontFamily: '"Times New Roman", Times, Georgia, serif',
+                  fontWeight: 300,
+                  fontSize: "10.5px",
+                  lineHeight: 1.55,
+                  color: "rgba(212, 175, 100, 0.50)",
+                  letterSpacing: "0.02em",
+                  maxWidth: "220px",
+                }}
+              >
+                Claremont Project at Berkeley Law.
+                <br />
+                Built by legal practitioners, blockchain experts, and developers.
+              </p>
+            </div>
+
+            {/* Painting attribution — bottom right */}
             <div
               style={{
                 position: "absolute",
