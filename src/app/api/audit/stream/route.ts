@@ -5,7 +5,7 @@ import type { ProgressEvent } from "@/lib/types";
 export const maxDuration = 120;
 
 // SSE timeout — sends a clean error just before Vercel's hard kill at 120s
-const TOTAL_AUDIT_TIMEOUT_MS = 108_000;
+const TOTAL_AUDIT_TIMEOUT_MS = 115_000;
 
 function encode(event: ProgressEvent): string {
   return `data: ${JSON.stringify(event)}\n\n`;

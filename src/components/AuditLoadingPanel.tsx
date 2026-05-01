@@ -69,12 +69,12 @@ const STAGE_LINES: Partial<Record<ProgressStage, string[]>> = {
   ],
 };
 
+// ai-risk is covered inside the combined security call — not emitted as its own stage
 const STAGE_CONFIG: { id: ProgressStage; label: string }[] = [
   { id: "fetch",    label: "Scanning repository structure" },
   { id: "triage",   label: "Identifying high-risk files" },
-  { id: "security", label: "Mapping API routes & auth flows" },
-  { id: "ethics",   label: "Reviewing legal compliance" },
-  { id: "ai-risk",  label: "Checking deployment configuration" },
+  { id: "security", label: "Auditing security, AI risk & ethics" },
+  { id: "ethics",   label: "Applying legal compliance analysis" },
   { id: "assembly", label: "Synthesizing audit findings" },
 ];
 

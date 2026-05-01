@@ -170,7 +170,7 @@ export async function runAudit(
 
   const response = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: 8192,
     system:
       "You are a full-stack auditor for legal technology applications. " +
       "Apply your knowledge of OWASP Top 10 2025, OWASP LLM Top 10 2025, MITRE ATLAS, " +
@@ -178,6 +178,7 @@ export async function runAudit(
       "Analyze the provided code for security vulnerabilities, AI-specific risks, and legal ethics issues. " +
       "Only report findings grounded in visible code, UI copy, or workflow evidence. " +
       "Map each finding to a specific rule or standard reference. " +
+      "Be concise: each description and remediation must be 1-2 sentences. " +
       "Respond only with a JSON code block — an array of findings. No commentary.",
     messages: [
       {
