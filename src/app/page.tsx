@@ -444,7 +444,7 @@ export default function Home() {
               <p
                 style={{
                   fontFamily: '"Times New Roman", Times, Georgia, serif',
-                  fontStyle: "italic",
+                  fontStyle: "normal",
                   fontWeight: 300,
                   fontSize: "11px",
                   lineHeight: 1.5,
