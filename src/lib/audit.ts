@@ -66,10 +66,18 @@ function recoverPartialArray(text: string): unknown[] {
 }
 
 function extractJson<T>(text: string): T {
+  // Try a complete code block first
   const blockMatch = text.match(/```(?:json)?\s*([\s\S]+?)```/);
-  const raw = blockMatch
+  // Try a complete raw JSON structure
+  const completeMatch = blockMatch
     ? blockMatch[1].trim()
     : (text.match(/(\{[\s\S]+\}|\[[\s\S]+\])/) ?? [])[1];
+
+  // Fallback: if output was truncated (no closing ``` or ]), grab everything
+  // from the first [ or { and let recoverPartialArray salvage complete objects
+  const startIdx = text.search(/[\[{]/);
+  const raw = completeMatch ?? (startIdx !== -1 ? text.slice(startIdx) : null);
+
   if (!raw) throw new Error("No JSON found in model response");
   try {
     return JSON.parse(raw) as T;
@@ -168,7 +176,7 @@ export async function runSecurityAudit(
 
   const response = await withTimeout(anthropic.messages.create({
     model: MODEL,
-    max_tokens: 2048,
+    max_tokens: 3500,
     system:
       "You are a security auditor specializing in legal technology applications. " +
       "Apply your knowledge of OWASP Top 10 2025, OWASP LLM Top 10 2025, and MITRE ATLAS. " +
@@ -216,7 +224,7 @@ export async function runEthicsAudit(
 
   const response = await withTimeout(anthropic.messages.create({
     model: MODEL,
-    max_tokens: 2048,
+    max_tokens: 3500,
     system:
       "You are a legal ethics auditor reviewing a legal technology application for compliance " +
       "with the ABA Model Rules of Professional Conduct and ABA Formal Opinion 512 (2024). " +
