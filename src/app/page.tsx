@@ -431,6 +431,33 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Painting attribution */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: "28px",
+                right: "24px",
+                textAlign: "right",
+                pointerEvents: "none",
+              }}
+            >
+              <p
+                style={{
+                  fontFamily: '"Times New Roman", Times, Georgia, serif',
+                  fontStyle: "italic",
+                  fontWeight: 300,
+                  fontSize: "11px",
+                  lineHeight: 1.5,
+                  color: "rgba(212, 175, 100, 0.55)",
+                  letterSpacing: "0.03em",
+                }}
+              >
+                The Storm at Sea
+                <br />
+                Ivan Aivazovsky, 1850
+              </p>
+            </div>
+
             {/* Scroll indicator */}
             <div
               style={{
