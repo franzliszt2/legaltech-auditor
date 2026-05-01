@@ -1,6 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { RepoBundle, TriageMap, Finding, AuditReport, OverallScore } from "./types";
-import { buildSecurityContext, buildEthicsContext } from "./context";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -11,7 +10,7 @@ const MODEL = (process.env.AUDIT_MODEL as string | undefined) ?? "claude-sonnet-
 // Cost-control constants — keep a single audit well under $1
 const MAX_FILE_CHARS = 6_000;        // per-file char limit in prompts (~1.5k tokens)
 const MAX_TOTAL_INPUT_CHARS = 80_000; // total char budget across all files in one call (~20k tokens)
-const AUDIT_STAGE_TIMEOUT_MS = 90_000; // per-stage timeout — cold cache + 4096 output tokens on Sonnet can take 60-80s
+const AUDIT_STAGE_TIMEOUT_MS = 50_000; // per-stage timeout — no large context injection, should resolve in 20-40s
 
 // Wraps a promise with a hard timeout, raising a descriptive error if exceeded
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
@@ -164,30 +163,19 @@ export async function runSecurityAudit(
   bundle: RepoBundle,
   triage: TriageMap
 ): Promise<Finding[]> {
-  const secContext = buildSecurityContext();
   const allPaths = [...new Set([...triage.securityPaths, ...triage.aiRiskPaths])];
   const codeBlock = formatFiles(bundle, allPaths.length ? allPaths : undefined);
 
   const response = await withTimeout(anthropic.messages.create({
     model: MODEL,
-    max_tokens: 4096, // 4096 is ample for typical finding sets; reduces cost vs 8192
-    system: [
-      {
-        type: "text",
-        text: secContext,
-        cache_control: { type: "ephemeral" },
-      },
-      {
-        type: "text",
-        text:
-          "You are a security auditor specializing in legal technology applications. " +
-          "You have deep knowledge of OWASP Top 10, OWASP LLM Top 10, and MITRE ATLAS (all provided above). " +
-          "Analyze the provided code for security vulnerabilities and AI-specific risks. " +
-          "Only report findings grounded in visible code evidence. " +
-          "Map each finding to a specific OWASP or MITRE ATLAS reference. " +
-          "Respond only with a JSON code block — an array of findings. No commentary.",
-      },
-    ],
+    max_tokens: 2048,
+    system:
+      "You are a security auditor specializing in legal technology applications. " +
+      "Apply your knowledge of OWASP Top 10 2025, OWASP LLM Top 10 2025, and MITRE ATLAS. " +
+      "Analyze the provided code for security vulnerabilities and AI-specific risks. " +
+      "Only report findings grounded in visible code evidence. " +
+      "Map each finding to a specific OWASP or MITRE ATLAS reference. " +
+      "Respond only with a JSON code block — an array of findings. No commentary.",
     messages: [
       {
         role: "user",
@@ -221,7 +209,6 @@ export async function runEthicsAudit(
   bundle: RepoBundle,
   triage: TriageMap
 ): Promise<Finding[]> {
-  const ethicsContext = buildEthicsContext();
   const codeBlock = formatFiles(
     bundle,
     triage.ethicsPaths.length ? triage.ethicsPaths : undefined
@@ -229,24 +216,14 @@ export async function runEthicsAudit(
 
   const response = await withTimeout(anthropic.messages.create({
     model: MODEL,
-    max_tokens: 4096, // 4096 is ample for typical finding sets; reduces cost vs 8192
-    system: [
-      {
-        type: "text",
-        text: ethicsContext,
-        cache_control: { type: "ephemeral" },
-      },
-      {
-        type: "text",
-        text:
-          "You are a legal ethics auditor reviewing a legal technology application for compliance " +
-          "with the ABA Model Rules of Professional Conduct and ABA Formal Opinion 512 (2024), both provided above. " +
-          "Analyze the application for attorney ethics risks. " +
-          "Only report findings grounded in visible code, UI copy, or workflow evidence. " +
-          "Map each finding to a specific ABA Model Rule or Opinion 512 section. " +
-          "Respond only with a JSON code block — an array of findings. No commentary.",
-      },
-    ],
+    max_tokens: 2048,
+    system:
+      "You are a legal ethics auditor reviewing a legal technology application for compliance " +
+      "with the ABA Model Rules of Professional Conduct and ABA Formal Opinion 512 (2024). " +
+      "Analyze the application for attorney ethics risks. " +
+      "Only report findings grounded in visible code, UI copy, or workflow evidence. " +
+      "Map each finding to a specific ABA Model Rule or Opinion 512 section. " +
+      "Respond only with a JSON code block — an array of findings. No commentary.",
     messages: [
       {
         role: "user",
